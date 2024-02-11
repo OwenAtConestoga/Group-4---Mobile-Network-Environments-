@@ -1,3 +1,3 @@
 I have to do for the gui:
-- make the edit profile page function based on the user
+- fix the already created user profile part
 - implement the vote function fully

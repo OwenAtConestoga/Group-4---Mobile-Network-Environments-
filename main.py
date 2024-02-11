@@ -246,16 +246,24 @@ def main_page():
         main_window, text="Edit Profile", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16), command=edit_profile)
     edit_profile_button.pack(pady=10)
 
-# Function to edit the profile
 def edit_profile():
     # Define the filename for editing the profile based on the logged-in username
-    filename = f"{logged_in_username}_profile.csv"  # Corrected filename
+    filename = "_profile.csv"
 
     try:
         with open(filename, 'r') as file:
             reader = csv.DictReader(file)
-            # Assuming there is only one row per user, you can access it directly
-            row = next(reader)
+
+            # Find the row that matches the logged-in username
+            user_profile = None
+            for row in reader:
+                if row['Username'].strip() == logged_in_username:
+                    user_profile = row
+                    break
+
+            if user_profile is None:
+                messagebox.showerror(title="Error", message="Profile not found. Please create a profile.")
+                return
 
             # Create a new window for editing the profile
             edit_window = tk.Toplevel(main_window)
@@ -264,85 +272,74 @@ def edit_profile():
             edit_window.configure(bg='#333333')
 
             # Populate fields with existing data
-            first_name_entry = tk.Entry(edit_window, font=("Arial",   16))
-            first_name_entry.insert(0, row['First Name'])
-            first_name_entry.grid(row=0, column=1, padx=10, pady=10)
+            entry_widgets = []
+            row_index = 0
+            for column_name, column_value in user_profile.items():
+                tk.Label(edit_window, text=column_name.strip(), bg='#333333', fg="#FFFFFF", font=("Arial", 16)).grid(row=row_index, column=0, padx=10, pady=10)
+                entry_widget = tk.Entry(edit_window, font=("Arial", 16))
+                entry_widget.insert(0, column_value.strip())
+                entry_widget.grid(row=row_index, column=1, padx=10, pady=10)
+                entry_widgets.append(entry_widget)
+                row_index += 1
 
-            last_name_entry = tk.Entry(edit_window, font=("Arial",   16))
-            last_name_entry.insert(0, row['Last Name'])
-            last_name_entry.grid(row=1, column=1, padx=10, pady=10)
-
-            bio_entry = tk.Text(edit_window, width=30, height=5, wrap=tk.WORD, font=("Arial",   16))
-            bio_entry.insert(tk.END, row['Bio'])
-            bio_entry.grid(row=2, column=1, padx=10, pady=10)
-
-            class_entry = tk.Entry(edit_window, font=("Arial",   16))
-            class_entry.insert(0, row['Class'])
-            class_entry.grid(row=3, column=1, padx=10, pady=10)
-
-            submit_button = tk.Button(edit_window, text="Submit", bg="#FF3399", fg="#FFFFFF", font=("Arial",   16),
-                                      command=lambda: submit_edited_profile(first_name_entry.get(),
-                                                                          last_name_entry.get(),
-                                                                          bio_entry.get("1.0", tk.END),
-                                                                          class_entry.get()))
-            submit_button.grid(row=4, column=0, columnspan=2, pady=10)
+            submit_button = tk.Button(edit_window, text="Submit", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16),
+                                      command=lambda: submit_edited_profile(*[widget.get() for widget in entry_widgets]))
+            submit_button.grid(row=row_index, column=0, columnspan=2, pady=10)
 
     except FileNotFoundError:
-        messagebox.showerror(title="Error", message="Profile not found.")
-        
-# Function to create the upload profile window
-def upload_profile():
-    global main_window
-    upload_window = tk.Toplevel(main_window)
-    upload_window.title("Upload Profile")
-    upload_window.geometry('500x600')
-    upload_window.configure(bg='#333333')
+        messagebox.showerror(title="Error", message="Profile not found. Please create a profile.")
 
-    tk.Label(upload_window, text="First Name", bg='#333333', fg="#FFFFFF", font=("Arial",   16)).grid(row=0, column=0, padx=10, pady=10)
-    first_name_entry = tk.Entry(upload_window, font=("Arial",   16))
-    first_name_entry.grid(row=0, column=1, padx=10, pady=10)
 
-    tk.Label(upload_window, text="Last Name", bg='#333333', fg="#FFFFFF", font=("Arial",   16)).grid(row=1, column=0, padx=10, pady=10)
-    last_name_entry = tk.Entry(upload_window, font=("Arial",   16))
-    last_name_entry.grid(row=1, column=1, padx=10, pady=10)
-
-    tk.Label(upload_window, text="Bio", bg='#333333', fg="#FFFFFF", font=("Arial",   16)).grid(row=2, column=0, padx=10, pady=10)
-    bio_entry = tk.Text(upload_window, width=30, height=5, wrap=tk.WORD, font=("Arial",   16))
-    bio_entry.grid(row=2, column=1, padx=10, pady=10)
-
-    tk.Label(upload_window, text="Class", bg='#333333', fg="#FFFFFF", font=("Arial",   16)).grid(row=3, column=0, padx=10, pady=10)
-    class_entry = tk.Entry(upload_window, font=("Arial",   16))
-    class_entry.grid(row=3, column=1, padx=10, pady=10)
-
-    submit_button = tk.Button(upload_window, text="Submit", bg="#FF3399", fg="#FFFFFF", font=("Arial",   16), command=lambda: submit_profile(logged_in_username, first_name_entry.get(), last_name_entry.get(), bio_entry.get("1.0", tk.END), class_entry.get()))
-    submit_button.grid(row=4, column=0, columnspan=2, pady=10)
-
-def submit_profile(username, first_name, last_name, bio, class_name):
-    # Define the filename for the profiles
+def edit_profile():
+    # Define the filename for editing the profile based on the logged-in username
     filename = "_profile.csv"
-    
-    # Field names for the CSV file
-    fieldnames = ['Username', 'First Name', 'Last Name', 'Bio', 'Class']
-    
-    # Open the file in append mode ('a') and create a writer object
-    with open(filename, 'a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
-        
-        # Write the header if the file is empty
-        if file.tell() ==  0:
-            writer.writeheader()
-        
-        # Write the profile information as a dictionary
-        writer.writerow({
-            'Username': username,
-            'First Name': first_name,
-            'Last Name': last_name,
-            'Bio': bio,
-            'Class': class_name
-        })
 
-    # Notify the user that the profile was saved
-    messagebox.showinfo(title="Profile Saved", message="Your profile has been saved.")
+    try:
+        with open(filename, 'r') as file:
+            reader = csv.DictReader(file)
+
+            # Find the row that matches the logged-in username
+            user_profile = None
+            for row in reader:
+                if row['Username'].strip() == logged_in_username:
+                    user_profile = row
+                    break
+
+            if user_profile is None:
+                messagebox.showerror(title="Error", message="Profile not found. Please create a profile.")
+                return
+
+            # Create a new window for editing the profile
+            edit_window = tk.Toplevel(main_window)
+            edit_window.title("Edit Profile")
+            edit_window.geometry('600x700')  # Adjusted size
+            edit_window.configure(bg='#333333')
+
+            # Populate fields with existing data
+            entry_widgets = []
+            row_index = 0
+            for column_name, column_value in user_profile.items():
+                tk.Label(edit_window, text=column_name.strip(), bg='#333333', fg="#FFFFFF", font=("Arial", 16)).grid(row=row_index, column=0, padx=10, pady=10)
+
+                if column_name.strip() == 'Bio':
+                    entry_widget = tk.Text(edit_window, width=30, height=5, wrap=tk.WORD, font=("Arial", 16))
+                    entry_widget.insert(tk.END, column_value.strip())
+                    entry_widget.grid(row=row_index, column=1, padx=10, pady=10)
+                else:
+                    entry_widget = tk.Entry(edit_window, font=("Arial", 16))
+                    entry_widget.insert(0, column_value.strip())
+                    entry_widget.grid(row=row_index, column=1, padx=10, pady=10)
+
+                entry_widgets.append(entry_widget)
+                row_index += 1
+
+            submit_button = tk.Button(edit_window, text="Submit", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16),
+                                      command=lambda: submit_edited_profile(*[widget.get() if isinstance(widget, tk.Entry) else widget.get("1.0", tk.END) for widget in entry_widgets]))
+            submit_button.grid(row=row_index, column=0, columnspan=2, pady=10)
+
+    except FileNotFoundError:
+        messagebox.showerror(title="Error", message="Profile not found. Please create a profile.")
+
 
 # Function to submit the edited profile
 def submit_edited_profile(first_name, last_name, bio, class_name):
