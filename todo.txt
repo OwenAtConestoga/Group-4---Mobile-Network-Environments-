@@ -1,39 +1,4 @@
 I have to do for the gui:
-- fix the already created user profile part
-- implement the vote function fully
-
-
-import socket
-import json
-
-# Define server details
-SERVER_IP = "localhost"
-SERVER_PORT =  12345
-
-# Connect to the server
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect((SERVER_IP, SERVER_PORT))
-
-# Predefined user profile and vote objects
-user_profile = {
-    "name": "John",
-    "last_name": "Doe",
-    "bio": "A software developer.",
-    "class": "CS101"
-}
-
-vote = {
-    "vote choice": "owen oliveira",
-    "candidate number": "candidate4"
-}
-
-# Serialize the objects into JSON strings
-user_profile_str = json.dumps(user_profile)
-vote_str = json.dumps(vote)
-
-# Send the user profile and vote to the server
-client_socket.sendall(user_profile_str.encode())
-client_socket.sendall(vote_str.encode())
-
-# Close the connection
-client_socket.close()
+- add vote
+- fix edit
+ggz

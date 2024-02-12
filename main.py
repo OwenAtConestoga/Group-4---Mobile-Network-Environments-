@@ -1,10 +1,14 @@
 import csv
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import Toplevel, Label, Entry, Checkbutton, Button
+
+import os
 
 # Global variable to store the logged-in username
 logged_in_username = ""
 class_code_verified = False
+
 
   # Function to handle registration
 def register_account():
@@ -110,27 +114,46 @@ def upload_profile():
     submit_button.pack(pady=20)
     
 def submit_profile(first_name, last_name, bio, class_name):
-    # Define the filename for saving the profile
-    filename = f"{logged_in_username}_profile.csv"
+    # Fixed filename for saving all profiles
+    filename = "_profile.csv"
+    
     # Field names for the CSV file
     fieldnames = ['First Name', 'Last Name', 'Bio', 'Class']
     
-    # Open the file in append mode ('a') and create a writer object
-    with open(filename, 'a', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
+    # Flag to check if profile already exists
+    profile_exists = False
+    
+    # Try to open the file in read mode to check existing profiles
+    try:
+        with open(filename, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row['First Name'] == first_name and row['Class'] == class_name:
+                    profile_exists = True
+                    break
+    except FileNotFoundError:
+        # File not found is okay, means no profiles have been created yet
+        pass
+    
+    # Proceed only if profile does not exist
+    if not profile_exists:
+        # Open the file in append mode ('a') for adding new entries
+        with open(filename, 'a', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writerow({
+                'First Name': first_name,
+                'Last Name': last_name,
+                'Bio': bio,
+                'Class': class_name
+            })
         
-        # Write the profile information as a dictionary
-        writer.writerow({
-            'First Name': first_name,
-            'Last Name': last_name,
-            'Bio': bio,
-            'Class': class_name
-        })
-    
-    # Notify the user that the profile was uploaded
-    messagebox.showinfo(title="Profile Uploaded", message="Your profile has been uploaded.")
+        # Notify the user that the profile was uploaded
+        messagebox.showinfo(title="Profile Uploaded", message="Your profile has been uploaded.")
+    else:
+        # Notify the user that the profile already exists
+        messagebox.showerror(title="Error", message="A profile for this name and class already exists.")
 
-    
+
     # Function to validate class details
     def validate_class_details(class_name, class_passcode):
         # Read the schoolCode.csv file and verify the class name and passcode
@@ -253,8 +276,7 @@ def main_page():
     welcome_label.pack(padx=50, pady=50)
 
     # Voting Button
-    voting_button = tk.Button(
-        main_window, text="Vote", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16), command=lambda: print("Voting..."))
+    voting_button = tk.Button(main_window, text="Vote", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16), command=vote)
     voting_button.pack(pady=10)
 
     # Function to check if a profile already exists before uploading
@@ -290,6 +312,50 @@ def main_page():
     edit_profile_button = tk.Button(
         main_window, text="Edit Profile", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16), command=edit_profile)
     edit_profile_button.pack(pady=10)
+
+
+def vote():
+    vote_window = Toplevel(main_window)
+    vote_window.title("Vote")
+    vote_window.geometry("1200x800")  # Adjusted size to  1200x800
+    vote_window.configure(bg='#333333')  # Set background color to white
+
+    # Group the labels and text boxes together using a frame
+    info_frame = tk.Frame(vote_window, bg='#FFFFFF')
+    info_frame.pack(pady=10)
+
+    # Candidate's Full Name
+    full_name_label = Label(info_frame, text="Full Name:", bg='#FFFFFF', fg="#000000")
+    full_name_label.grid(row=0, column=0, sticky="W")
+    full_name_entry = Entry(info_frame, state='readonly', textvariable=tk.StringVar(value="Owen Oliveira"), bg='#FFFFFF', fg="#000000")
+    full_name_entry.grid(row=0, column=1, sticky="W")
+
+    # Candidate's Bio
+    bio_label = Label(info_frame, text="Bio:", bg='#FFFFFF', fg="#000000")
+    bio_label.grid(row=1, column=0, sticky="W")
+    bio_entry = Entry(info_frame, state='readonly', textvariable=tk.StringVar(value="Im a great leader!"), bg='#FFFFFF', fg="#000000")
+    bio_entry.grid(row=1, column=1, sticky="W")
+
+    # Candidate's Class
+    class_label = Label(info_frame, text="Class:", bg='#FFFFFF', fg="#000000")
+    class_label.grid(row=2, column=0, sticky="W")
+    class_entry = Entry(info_frame, state='readonly', textvariable=tk.StringVar(value="Network Enviroment"), bg='#FFFFFF', fg="#000000")
+    class_entry.grid(row=2, column=1, sticky="W")
+
+    # Checkbox for selection
+    select_checkbox = Checkbutton(info_frame, text="Select", bg='#FFFFFF', fg="#000000")
+    select_checkbox.grid(row=3, column=0, sticky="W")
+
+    # Configure the columns to stay together
+    info_frame.grid_columnconfigure(0, weight=1)
+    info_frame.grid_columnconfigure(1, weight=1)
+    for i in range(4):  # Adjust the range based on the number of rows you'll end up using
+        info_frame.grid_rowconfigure(i, weight=1)
+
+
+    # Close Button
+    Button(vote_window, text="Close", command=vote_window.destroy).pack()
+
 
 def edit_profile():
     # Define the filename for editing the profile based on the logged-in username
