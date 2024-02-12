@@ -78,13 +78,58 @@ def validate_class_details(class_name, class_passcode):
 
     # If the loop completes without finding a match, show an error message
     messagebox.showerror(title="Error", message="Invalid class name or passcode.")
-# Function to create the upload profile window
+
+
 def upload_profile():
     global main_window
     upload_window = tk.Toplevel(main_window)
     upload_window.title("Upload Profile")
     upload_window.geometry('500x600')
     upload_window.configure(bg='#333333')
+    
+    # Adding input fields for profile information
+    tk.Label(upload_window, text="First Name", bg='#333333', fg="#FFFFFF", font=("Arial", 16)).pack(pady=10)
+    first_name_entry = tk.Entry(upload_window, font=("Arial", 16))
+    first_name_entry.pack(pady=10)
+    
+    tk.Label(upload_window, text="Last Name", bg='#333333', fg="#FFFFFF", font=("Arial", 16)).pack(pady=10)
+    last_name_entry = tk.Entry(upload_window, font=("Arial", 16))
+    last_name_entry.pack(pady=10)
+    
+    tk.Label(upload_window, text="Bio", bg='#333333', fg="#FFFFFF", font=("Arial", 16)).pack(pady=10)
+    bio_entry = tk.Text(upload_window, height=5, width=40, font=("Arial", 16))
+    bio_entry.pack(pady=10)
+    
+    tk.Label(upload_window, text="Class", bg='#333333', fg="#FFFFFF", font=("Arial", 16)).pack(pady=10)
+    class_entry = tk.Entry(upload_window, font=("Arial", 16))
+    class_entry.pack(pady=10)
+    
+    # Submit button for profile creation
+    submit_button = tk.Button(upload_window, text="Submit", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16),
+                              command=lambda: submit_profile(first_name_entry.get(), last_name_entry.get(), bio_entry.get("1.0", tk.END), class_entry.get()))
+    submit_button.pack(pady=20)
+    
+def submit_profile(first_name, last_name, bio, class_name):
+    # Define the filename for saving the profile
+    filename = f"{logged_in_username}_profile.csv"
+    # Field names for the CSV file
+    fieldnames = ['First Name', 'Last Name', 'Bio', 'Class']
+    
+    # Open the file in append mode ('a') and create a writer object
+    with open(filename, 'a', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        
+        # Write the profile information as a dictionary
+        writer.writerow({
+            'First Name': first_name,
+            'Last Name': last_name,
+            'Bio': bio,
+            'Class': class_name
+        })
+    
+    # Notify the user that the profile was uploaded
+    messagebox.showinfo(title="Profile Uploaded", message="Your profile has been uploaded.")
+
     
     # Function to validate class details
     def validate_class_details(class_name, class_passcode):
