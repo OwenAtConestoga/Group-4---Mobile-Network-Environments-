@@ -1,5 +1,6 @@
 #include <windows.networking.sockets.h>
 #include <iostream>
+#include "Profile.h"
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
@@ -49,3 +50,4 @@ int main()
 	closesocket(serverSocket);
 	WSACleanup();
 	return 1;
+}
