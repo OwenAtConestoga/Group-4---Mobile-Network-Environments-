@@ -30,6 +30,27 @@ struct Profile
             std::to_string(voteCount);
     }
 
+    //When the server receives a serialized Profile string from the client, it can be reduced to a Profile object for saving and update data 
+    static Profile deserialize(const std::string& data) 
+    {
+        std::istringstream dataStream(data);
+        std::string userName, firstName, lastName, bio, userClass;
+        int id, voteCount;
+
+        std::getline(dataStream, userName, ',');
+        std::getline(dataStream, firstName, ',');
+        std::getline(dataStream, lastName, ',');
+        std::getline(dataStream, bio, ',');
+        std::getline(dataStream, userClass, ',');
+
+        dataStream >> id;
+        dataStream.ignore(); // Ignore the comma
+        dataStream >> voteCount;
+
+        return Profile(userName, firstName, lastName, bio, userClass, id, voteCount);
+    }
+
+
     //Save the profile data into file
     void saveToFile(const std::string& filePath) const 
     {
