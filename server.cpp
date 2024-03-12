@@ -37,13 +37,22 @@ int main()
 	}
 
 	SOCKET connectionSocket;
-	if ((connectionSocket = accept(serverSocket, NULL, NULL)) == SOCKET_ERROR) {
+	if ((connectionSocket = accept(serverSocket, NULL, NULL)) == SOCKET_ERROR) 
+	{
 		closesocket(serverSocket);
 		WSACleanup();
 		return 0;
 	}
 
 	char RxBuffer[128] = {};
+	int bytesReceived = recv(connectionSocket, RxBuffer, sizeof(RxBuffer), 0);
+	if (bytesReceived > 0) 
+	{
+		RxBuffer[bytesReceived] = '\0';
+		// Deserialize the received data into a Profile object and save/update
+		Profile profile = Profile::deserialize(string(RxBuffer));
+		profile.saveToFile("profiles.txt"); // Save to prifile.txt, if need we can change the path
+	}
 	recv(connectionSocket, RxBuffer, sizeof(RxBuffer), 0);
 
 	closesocket(connectionSocket);
