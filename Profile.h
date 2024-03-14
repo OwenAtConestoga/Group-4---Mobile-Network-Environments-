@@ -5,33 +5,73 @@
 #include <fstream>
 #include <iostream>
 
-struct Profile 
+
+class Packet
 {
-    //Basic Account setting
-    std::string userName;
-    std::string firstName;
-    std::string lastName;
-    std::string bio;
-    std::string userClass;
-    int id;
-    int voteCount;
-
-    //Set up basic initialize the profile with provided data
-    Profile(const std::string& uName, const std::string& fName, const std::string& lName,
-        const std::string& b, const std::string& uClass, int i, int vCount)
-        : userName(uName), firstName(fName), lastName(lName),
-        bio(b), userClass(uClass), id(i), voteCount(vCount) {}
-
-    // swich the profile struct converts the profile's attributes into a single string, if no need now, we can delate it
-    std::string serialize() const 
+    struct Header
     {
-        return userName + "," + firstName + "," + lastName + "," +
-            bio + "," + userClass + "," + std::to_string(id) + "," +
-            std::to_string(voteCount);
-    }
+        int Length; // Length of packet
+    } Head;
 
-    //When the server receives a serialized Profile string from the client, it can be reduced to a Profile object for saving and update data 
-    static Profile deserialize(const std::string& data) 
+    struct Profile
+    {
+        // Basic Account setting
+        std::string userName;
+        std::string firstName;
+        std::string lastName;
+        std::string bio;
+        std::string userClass;
+        int id;
+        int voteCount;
+
+    } profile;
+
+    char *TxBuffer;
+
+    unsigned int CRC;
+
+    const unsigned int CONSTCRC = 0xFF00FF00;
+
+public:
+
+    char* SerializeData()
+    {
+
+        CRC = CalculateCRC();
+
+        if (TxBuffer)
+        {
+
+            delete[] TxBuffer;
+        }
+
+        // Set to the total number of bytes
+        int TotalSize = sizeof(Header) + Head.Length;
+
+        // Allocate memory to buffer
+        TxBuffer = new char[TotalSize];
+
+        // Copy the header information
+        memcpy(TxBuffer, &Head, sizeof(Header));
+
+        // Copy the body
+        memcpy(TxBuffer + sizeof(Header), &profile, Head.Length);
+
+        // Copy the CRC
+		memcpy(TxBuffer + sizeof(Header) + Head.Length, &CRC, sizeof(CRC));
+
+        // Return refence point to the packet
+        return TxBuffer;
+    };
+
+    // Set up basic initialize the profile with provided data
+    Profile(const std::string &uName, const std::string &fName, const std::string &lName,
+            const std::string &b, const std::string &uClass, int i, int vCount)
+        : userName(uName), firstName(fName), lastName(lName),
+          bio(b), userClass(uClass), id(i), voteCount(vCount) {}
+
+    // When the server receives a serialized Profile string from the client, it can be reduced to a Profile object for saving and update data
+    static Profile deserialize(const std::string &data)
     {
         std::istringstream dataStream(data);
         std::string userName, firstName, lastName, bio, userClass;
@@ -50,22 +90,28 @@ struct Profile
         return Profile(userName, firstName, lastName, bio, userClass, id, voteCount);
     }
 
+    unsigned int CalculateCRC()
+	{
+		//Set the CRC to 0xFF00FF00
+		CRC = CONSTCRC;
+		return CRC;
 
-    //Save the profile data into file
-    void saveToFile(const std::string& filePath) const 
+	}
+
+}
+// Save the profile data into file
+void saveToFile(const std::string &filePath) const
+{
+    std::ofstream outFile(filePath, std::ios::app);
+    if (!outFile)
     {
-        std::ofstream outFile(filePath, std::ios::app);
-        if (!outFile) 
-        {
-            std::cerr << "Could not open file for writing: " << filePath << std::endl;
-            return;
-        }
-        outFile << serialize() << std::endl;
-        outFile.close();
+        std::cerr << "Could not open file for writing: " << filePath << std::endl;
+        return;
     }
-
-   
-};
+    outFile << serialize() << std::endl;
+    outFile.close();
+}
+}
+;
 
 #endif // PROFILE_H
-
