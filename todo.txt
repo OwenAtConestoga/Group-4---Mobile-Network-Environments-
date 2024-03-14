@@ -1,4 +1,1 @@
-I have to do for the gui:
-- add vote
-- fix edit
-ggz
+Testing to see if gitpushing is working
