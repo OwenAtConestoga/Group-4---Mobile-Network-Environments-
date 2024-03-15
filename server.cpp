@@ -3,6 +3,8 @@
 #include "Profile.h"
 #include "serverConnection.h"
 #include "header.h"
+#include "vote.h"
+#include "Password.h"
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
@@ -11,8 +13,11 @@ int main()
 	ServerConnection server;
 	WSAData wsaData;
 	int bytesReceived;
+	char* conversion;
 	Packet CurrentPacket;
-	Profile* profile;
+	Password* account;
+	Vote* vote = (Vote*)calloc(1, sizeof(Vote));
+	Profile* profile = (Profile*)calloc(1, sizeof(profile));
 	// Sets up the server
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) { return 0; }
 	if (server.setServerSocket(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) != 0) { return 0; }
@@ -25,17 +30,57 @@ int main()
 	{
 		bytesReceived = server.recvMsg();
 		server.changeRxBuffer(server.getRxBuffer() + '\0');
-		
-		switch (CurrentPacket.getPacketType()) {
-		case(PacketTypes::CreateProfilePacket): //profile packet
-			profile = new Profile(server.getRxBuffer()); //creates a profile from the packet
-			break;
-		case(PacketTypes::EditProfilePacket):
-			profile->editProfile(server.getRxBuffer());
-			break;
-		case(PacketTypes::VotePacket):
+		CurrentPacket.DeserializeData(server.getRxBuffer());
+
+		switch (CurrentPacket.getPacketType()) 
+		{
+		case(PacketTypes::LoginRequestPacket):
+		{
+			account = new Password(CurrentPacket.getData());
+			CurrentPacket.setData("");
+			if (account->checkPassword(account->getUsername()))
+			{
+				CurrentPacket.setPacketType(PacketTypes::LoginSuccessPacket);
+			}
+			else
+			{
+				CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
+			}
+			server.changeTxBuffer(CurrentPacket.SerializeData());
+			server.sendMsg();
 			break;
 		}
+
+		case(PacketTypes::CreateProfilePacket): //profile packet
+			profile = new Profile((CurrentPacket.getData())); //creates a profile from the packet
+			break;
+
+		case(PacketTypes::EditProfilePacket):
+			if (account->checkPassword(profile->getUsername()))
+			{
+				profile->editProfile(CurrentPacket.getData());
+			}
+			else
+			{
+				CurrentPacket.setData("");
+				CurrentPacket.setPacketType(PacketTypes::LoginRequestPacket);
+				server.changeTxBuffer(CurrentPacket.SerializeData());
+				server.sendMsg();
+			}
+			break;
+
+		case(PacketTypes::VotePacket):
+			profile = new Profile((CurrentPacket.getData()));
+			vote = new Vote(*profile);
+			break;
+
+		case(PacketTypes::ProfileRequestPacket):
+			profile = new Profile((CurrentPacket.getData()));
+			memcpy(conversion, profile, sizeof(Profile));
+			CurrentPacket.setData(conversion);
+			server.changeTxBuffer(CurrentPacket.SerializeData());
+			server.sendMsg();
+			break;
 		
 	} while (bytesReceived > 0);
 

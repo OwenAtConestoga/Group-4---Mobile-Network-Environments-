@@ -2,12 +2,13 @@
 #include <windows.networking.sockets.h>
 #include <iostream>
 #include "Profile.h"
+#include "header.h"
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
 
 class ServerConnection {
-	struct Header;
+	Header head;
 	int CRC;
 	char* TxBuffer;
 	char* RxBuffer;
