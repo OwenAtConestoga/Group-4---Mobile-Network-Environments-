@@ -10,7 +10,8 @@ enum class PacketTypes {
     ProfileRequestPacket,
     LoginRequestPacket,
     NoAccessPacket,
-    LoginSuccessPacket
+    LoginSuccessPacket,
+    InvalidPacket,
 };
 
 class Packet {
@@ -82,6 +83,10 @@ public:
 
      PacketTypes getPacketType() { return Head.packetType; }
      char* getData() { return dataField; }
-     void setData(char* newData) { dataField = newData;  }
+     void setData(char* newData) { dataField = newData; }
+
+     int getDataSize() const{
+        return dataField?strlen(dataField):0;
+    }
 };
 

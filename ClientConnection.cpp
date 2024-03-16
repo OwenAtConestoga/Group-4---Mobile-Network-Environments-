@@ -1,19 +1,13 @@
 // Client Connection Class
 // Matteo Filippone
 
-#include <windows.networking.sockets.h>
-#pragma comment(lib, "Ws2_32.lib")
+#include "ClientConnection.h"
+#include "header.h"
 
-
-class ClientConnection{
-
-    SOCKET startConnection(){
-
-    
-	//starts Winsock DLLs
+bool ClientConnection::connectToServer(){
 	WSADATA wsaData;
 	if ((WSAStartup(MAKEWORD(2, 2), &wsaData)) != 0) {
-		return 0;
+		return false;
 	}
 
 	//initializes socket. SOCK_STREAM: TCP
@@ -21,7 +15,7 @@ class ClientConnection{
 	ClientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (ClientSocket == INVALID_SOCKET) {
 		WSACleanup();
-		return 0;
+		return false;
 	}
 
 	//Connect socket to specified server
@@ -32,31 +26,49 @@ class ClientConnection{
 	if ((connect(ClientSocket, (struct sockaddr*)&SvrAddr, sizeof(SvrAddr))) == SOCKET_ERROR) {
 		closesocket(ClientSocket);
 		WSACleanup();
-		return 0;
+		return false;
 	}
 
-    return ClientSocket;
+    return true;
 
-    }
+}
 
-    void closeConnection(SOCKET ClientSocket){
 
-    closesocket(ClientSocket);
+void ClientConnection::sendLoginRequest(const char* username, const char* password) {
+    std::string credentials = std::string(username) + "," + std::string(password);
+
+    Packet packet;
+    packet.setPacketType(PacketTypes::LoginRequestPacket);
+    packet.setData(const_cast<char*>(credentials.c_str()));
+
+    char* serializedData = packet.SerializeData();
+    int dataSize = packet.getDataSize() + sizeof(PacketTypes);
+    send(clientSocket, serializedData, dataSize, 0);
+    delete[] serializedData;
+}
+
+PacketTypes ClientConnection::receiveLoginResponse(){
+	char buffer[1024];
+	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer),0);
+	if ((bytesReceived) <= 0 ){
+		
+		return PacketTypes::InvalidPacket;
+	
+	};
+	
+	Packet packet;
+	packet.DeserializeData(buffer);
+	return packet.getPacketType();
+
+}
+
+void ClientConnection::closeConnection(){
+	closesocket(clientSocket);
 	WSACleanup();
+}
 
-    }
 
-    void sendPacket(SOCKET ClientSocket, char* Tx, int Size){
-
-        send(ClientSocket, Tx, Size, 0);
-
-    }
-
-    void recvPacket(SOCKET RecvSocket, char* Rx, int Size){
-
-        recv(RecvSocket, Rx, Size, 0);
-
-    }
 
     
-}
+
+    
