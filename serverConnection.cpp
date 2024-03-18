@@ -84,3 +84,35 @@ void ServerConnection::closeServer()
 	socketCleanUp(ConnectionSocket);
 	WSACleanup();
 }
+
+bool ServerConnection::checkIDInFIle(const std::string& filename, int searchID) {
+	std::ifstream file(filename);
+	std::string line;
+	if (!file.is_open()) 
+	{
+		std::cerr << "Can't Open This File" << std::endl;
+		return false;
+	}
+
+	while (getline(file, line)) 
+	{
+		std::stringstream ss(line);
+		std::string item;
+		getline(ss, item, ',');
+
+		try {
+			int fileID = std::stoi(item);	//Change String to Integer 
+
+			if (fileID == searchID) 
+			{
+				return true; // Find ID
+			}
+		}
+		catch (const std::invalid_argument& ia) 
+		{
+			std::cerr << "Wrong ID: " << item << std::endl;
+		}
+	}
+
+	return false; // Cant't find ID
+}

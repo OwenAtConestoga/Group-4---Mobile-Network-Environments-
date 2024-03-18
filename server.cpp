@@ -1,4 +1,4 @@
-#include <windows.networking.sockets.h>
+﻿#include <windows.networking.sockets.h>
 #include <iostream>
 #include "Profile.h"
 #include "serverConnection.h"
@@ -36,6 +36,20 @@ int main()
 		{
 		case(PacketTypes::LoginRequestPacket):
 		{
+			std::string data = CurrentPacket.getData();
+			std::stringstream ss(data);
+			std::string userID; 
+			getline(ss, userID, ','); 
+
+			if (!server.checkIDInFile("users.csv", std::stoi(userID))) 
+			{ 
+				std::cerr << "Can't Not Find This ID。" << std::endl;
+				CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
+				server.changeTxBuffer(CurrentPacket.SerializeData());
+				server.sendMsg();
+				break; 
+			}
+
 			account = new Password(CurrentPacket.getData());
 			CurrentPacket.setData("");
 			if (account->checkPassword(account->getUsername()))
