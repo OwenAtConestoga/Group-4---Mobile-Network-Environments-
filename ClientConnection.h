@@ -19,5 +19,8 @@ public:
     PacketTypes receiveLoginResponse();
     void closeConnection();
 
+    void sendPacket(Packet &packet);
+    void receivePacket(Packet &packet);
+
 
 };

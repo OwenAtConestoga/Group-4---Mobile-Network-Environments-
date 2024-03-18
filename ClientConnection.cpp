@@ -49,6 +49,7 @@ void ClientConnection::sendLoginRequest(const char* username, const char* passwo
 
 PacketTypes ClientConnection::receiveLoginResponse(){
 	char buffer[1024];
+	Packet packet;
 	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer),0);
 	if ((bytesReceived) <= 0 ){
 		
@@ -56,8 +57,9 @@ PacketTypes ClientConnection::receiveLoginResponse(){
 	
 	};
 	
-	Packet packet;
+	
 	packet.DeserializeData(buffer);
+	delete[] buffer;
 	return packet.getPacketType();
 
 }
@@ -68,6 +70,41 @@ void ClientConnection::closeConnection(){
 }
 
 
+void ClientConnection::sendPacket(Packet &packet){
+
+	char* serializedData = packet.SerializeData();
+    int dataSize = packet.getDataSize() + sizeof(PacketTypes);
+    send(clientSocket, serializedData, dataSize, 0);
+    delete[] serializedData;
+}
+    
+	
+	
+void ClientConnection::receivePacket(Packet &packet){
+
+	char buffer[sizeof(int)*2];
+	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), MSG_PEEK);
+	if ((bytesReceived) <= 0 ){
+		return;
+	};
+
+	int length, numOfBytes;
+	memcpy(&length, buffer, sizeof(int));
+	memcpy(&numOfBytes, buffer+sizeof(int), sizeof(int));
+
+	int totalSize=numOfBytes;
+	char* totalBuffer = new char[totalSize];
+	
+	int bytesReceived = recv(clientSocket, totalBuffer, totalSize, 0);
+	if ((bytesReceived) <= 0 ){
+		delete[] totalBuffer;
+		return;
+	};
+
+	packet.DeserializeData(totalBuffer);
+	delete[] totalBuffer;
+	
+}
 
     
 
