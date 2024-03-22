@@ -1,5 +1,10 @@
 #include "serverConnection.h"
 
+ServerConnection::ServerConnection()
+{
+	RxBuffer = (char*)calloc(1, sizeof())
+}
+
 int ServerConnection::socketCreateBind()
 {
 	sockaddr_in SvrAddr;
@@ -32,22 +37,14 @@ int ServerConnection::socketListenConnect()
 
 int ServerConnection::recvMsg()
 {
-	return recv(ConnectionSocket, RxBuffer, sizeof(RxBuffer), 0);
+	int bytes = recv(ConnectionSocket, RxBuffer, sizeof(RxBuffer), 0);
+	RDS.RxBuffer = RxBuffer;
+	return bytes;
 }
 
 void ServerConnection::sendMsg()
 {
-	send(ConnectionSocket, TxBuffer, sizeof(TxBuffer), 0);
-}
-
-void ServerConnection::changeTxBuffer(char* input)
-{
-	TxBuffer = input;
-}
-
-void ServerConnection::changeRxBuffer(char* output)
-{
-	RxBuffer = output;
+	send(ConnectionSocket, SDS.SerializeData(), sizeof(TxBuffer), 0);
 }
 
 int ServerConnection::setServerSocket(SOCKET newSocket)
@@ -96,8 +93,8 @@ bool ServerConnection::checkIDInFIle(const std::string& filename, int searchID) 
 
 	while (getline(file, line)) 
 	{
-		std::stringstream ss(line);
-		std::string item;
+		stringstream ss(line);
+		string item;
 		getline(ss, item, ',');
 
 		try {

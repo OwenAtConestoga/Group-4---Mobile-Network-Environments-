@@ -1,6 +1,8 @@
 ﻿#include <windows.networking.sockets.h>
 #include <iostream>
-#include "Profile.h"
+#include "createProfile.h"
+#include "ReadDataServer.h"
+#include "SendDataServer.h"
 #include "serverConnection.h"
 #include "header.h"
 #include "vote.h"
@@ -18,6 +20,8 @@ int main()
 	Password* account;
 	Vote* vote = (Vote*)calloc(1, sizeof(Vote));
 	Profile* profile = (Profile*)calloc(1, sizeof(profile));
+	SendDataServer SDS;
+	ReadDataServer RDS;
 	// Sets up the server
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) { return 0; }
 	if (server.setServerSocket(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) != 0) { return 0; }
@@ -32,24 +36,10 @@ int main()
 		server.changeRxBuffer(server.getRxBuffer() + '\0');
 		CurrentPacket.DeserializeData(server.getRxBuffer());
 
-		switch (CurrentPacket.getPacketType()) 
+		switch (CurrentPacket.getPacketType())
 		{
 		case(PacketTypes::LoginRequestPacket):
 		{
-			std::string data = CurrentPacket.getData();
-			std::stringstream ss(data);
-			std::string userID; 
-			getline(ss, userID, ','); 
-
-			if (!server.checkIDInFile("users.csv", std::stoi(userID))) 
-			{ 
-				std::cerr << "Can't Not Find This ID。" << std::endl;
-				CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
-				server.changeTxBuffer(CurrentPacket.SerializeData());
-				server.sendMsg();
-				break; 
-			}
-
 			account = new Password(CurrentPacket.getData());
 			CurrentPacket.setData("");
 			if (account->checkPassword(account->getUsername()))
@@ -67,6 +57,7 @@ int main()
 
 		case(PacketTypes::CreateProfilePacket): //profile packet
 			profile = new Profile((CurrentPacket.getData())); //creates a profile from the packet
+			profile->saveInfoToFile("profile.csv");
 			break;
 
 		case(PacketTypes::EditProfilePacket):
@@ -95,7 +86,7 @@ int main()
 			server.changeTxBuffer(CurrentPacket.SerializeData());
 			server.sendMsg();
 			break;
-		
+		}
 	} while (bytesReceived > 0);
 
 	server.closeServer();

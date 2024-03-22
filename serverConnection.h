@@ -1,8 +1,10 @@
 #pragma once
 #include <windows.networking.sockets.h>
 #include <iostream>
-#include "Profile.h"
-#include "header.h"
+#include <fstream>
+#include <sstream>
+#include "ReadDataServer.h"
+#include "SendDataServer.h"
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
@@ -12,21 +14,23 @@ class ServerConnection {
 	int CRC;
 	char* TxBuffer;
 	char* RxBuffer;
-	struct Packet;
+	Packet pkt;
 	SOCKET ServerSocket;
 	SOCKET ConnectionSocket;
+	ReadDataServer RDS;
+	SendDataServer SDS;
+	
+	
 
 public:
+	ServerConnection();
 	int socketCreateBind();
 	void socketCleanUp(SOCKET);
 	int socketListenConnect();
 	int recvMsg();
 	void sendMsg();
-	void changeTxBuffer(char*);
-	void changeRxBuffer(char*);
 	int setServerSocket(SOCKET);
 	int setConnectionSocket();
-	char* getRxBuffer();
 	void closeServer();
 	bool checkIDInFIle(const std::string& filename, int searchID);
 };
