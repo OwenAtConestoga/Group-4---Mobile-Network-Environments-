@@ -1,9 +1,10 @@
 #pragma once
+#include <stdlib.h>
 #include "structDefinitions.h"
 
 class ReadDataServer {
-    int& TotalSize;
-    Profile profile;
+    int* TotalSize;
+    Profile *profile;
     Packet pkt;
 public:
     string RxBuffer;

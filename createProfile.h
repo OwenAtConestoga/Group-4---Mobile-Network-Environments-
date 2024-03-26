@@ -13,7 +13,7 @@ class createProfile
 public:
 
     // Set up basic initialize the profile with provided data
-    createProfile(char* data, int& totalsize)
+    createProfile(char* data, int* totalsize)
     {
         profile.userName = strtok(data, ",");
         profile.firstName = strtok(NULL, ",");
@@ -22,7 +22,7 @@ public:
         profile.userClass = strtok(NULL, ",");
         profile.id = atoi(strtok(NULL, ","));
         profile.voteCount = atoi(strtok(NULL, ","));
-        TotalSize = totalsize;
+        TotalSize = (int&)totalsize;
     }
 
     createProfile(int profileID, int &totalsize)
@@ -37,7 +37,7 @@ public:
         profile.userClass = strtok(NULL, ",");
         profile.id = atoi(strtok(NULL, ","));
         profile.voteCount = atoi(strtok(NULL, ","));
-        TotalSize = totalsize;
+        TotalSize = (int*)totalsize;
     }
 
     createProfile()
@@ -51,16 +51,7 @@ public:
         profile.voteCount = 0;
         TotalSize = 0;
     }
-    void editProfile(char* data)
-    {
-        profile.userName = strtok(data, ",");
-        profile.firstName = strtok(NULL, ",");
-        profile.lastName = strtok(NULL, ",");
-        profile.bio = strtok(NULL, ",");
-        profile.userClass = strtok(NULL, ",");
-        profile.id = atoi(strtok(NULL, ","));
-        profile.voteCount = atoi(strtok(NULL, ","));
-    }
+
 
     void setVoteCount(int newVoteCount) {
         profile.voteCount = newVoteCount;

@@ -1,10 +1,7 @@
 #pragma once
 #include <windows.networking.sockets.h>
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include "ReadDataServer.h"
-#include "SendDataServer.h"
+#include "structDefinitions.h"
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
@@ -17,13 +14,9 @@ class ServerConnection {
 	Packet pkt;
 	SOCKET ServerSocket;
 	SOCKET ConnectionSocket;
-	ReadDataServer RDS;
-	SendDataServer SDS;
-	
-	
+
 
 public:
-	ServerConnection();
 	int socketCreateBind();
 	void socketCleanUp(SOCKET);
 	int socketListenConnect();
@@ -31,6 +24,7 @@ public:
 	void sendMsg();
 	int setServerSocket(SOCKET);
 	int setConnectionSocket();
+	char* getRxBuffer();
 	void closeServer();
 	bool checkIDInFIle(const std::string& filename, int searchID);
 };

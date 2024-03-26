@@ -1,10 +1,11 @@
 #include "ReadDataServer.h"
-
+#include "Logclass.h"
 ReadDataServer::ReadDataServer(string RX, int& Size, Profile newProfile, Packet newPkt)
 {
     RxBuffer = RX;
-    TotalSize = Size;
-    profile = newProfile;
+    TotalSize = (int*)Size;
+    profile = (Profile*)calloc(1, sizeof(Profile));
+    profile = &newProfile;
     pkt.CRC = newPkt.CRC;
     pkt.dataField = newPkt.dataField;
     pkt.Head = newPkt.Head;
@@ -15,7 +16,6 @@ void ReadDataServer::DeserializeData(char* buffer) {
         std::cerr << "Error: Null buffer pointer." << std::endl;
         return;
     }
-
     // Copy the header information from buffer to header
     memcpy(&pkt.Head, buffer, sizeof(Header));
 
@@ -27,4 +27,9 @@ void ReadDataServer::DeserializeData(char* buffer) {
 
     // Copy the CRC from buffer to CRC
     memcpy(&pkt.CRC, buffer + sizeof(Header) + pkt.Head.NumOfBytes, sizeof(pkt.CRC));
+}
+
+void ReadDataServer::logFile()
+{
+    LogClass log((string)"log.csv", (int&)TotalSize);
 }
