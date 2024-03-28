@@ -1,5 +1,6 @@
 ﻿#include <windows.networking.sockets.h>
 #include <iostream>
+#include <sstream>
 #include "Profile.h"
 #include "serverConnection.h"
 #include "header.h"
@@ -26,76 +27,80 @@ int main()
 	if (server.setConnectionSocket() != 0){	return 0; }
 
 	// Accepts and recieves messages
-	do 
+	do
 	{
 		bytesReceived = server.recvMsg();
-		server.changeRxBuffer(server.getRxBuffer() + '\0');
-		CurrentPacket.DeserializeData(server.getRxBuffer());
-
-		switch (CurrentPacket.getPacketType()) 
+		if (bytesReceived > 0)
 		{
-		case(PacketTypes::LoginRequestPacket):
-		{
-			std::string data = CurrentPacket.getData();
-			std::stringstream ss(data);
-			std::string userID; 
-			getline(ss, userID, ','); 
+			server.changeRxBuffer(server.getRxBuffer() + '\0');
+			CurrentPacket.DeserializeData(server.getRxBuffer());
 
-			if (!server.checkIDInFile("users.csv", std::stoi(userID))) 
-			{ 
-				std::cerr << "Can't Not Find This ID。" << std::endl;
-				CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
-				server.changeTxBuffer(CurrentPacket.SerializeData());
-				server.sendMsg();
-				break; 
-			}
+			switch (CurrentPacket.getPacketType())
+			{
+			case(PacketTypes::LoginRequestPacket):
+			{
+				std::string data = CurrentPacket.getData();
+				std::stringstream ss(data);
+				std::string userID;
+				getline(ss, userID, ',');
 
-			account = new Password(CurrentPacket.getData());
-			CurrentPacket.setData("");
-			if (account->checkPassword(account->getUsername()))
-			{
-				CurrentPacket.setPacketType(PacketTypes::LoginSuccessPacket);
-			}
-			else
-			{
-				CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
-			}
-			server.changeTxBuffer(CurrentPacket.SerializeData());
-			server.sendMsg();
-			break;
-		}
+				if (!server.checkIDInFile("users.csv", std::stoi(userID)))
+				{
+					std::cerr << "Can't Not Find This ID" << std::endl;
+					CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
+					server.changeTxBuffer(CurrentPacket.SerializeData());
+					server.sendMsg();
+					break;
+				}
 
-		case(PacketTypes::CreateProfilePacket): //profile packet
-			profile = new Profile((CurrentPacket.getData())); //creates a profile from the packet
-			break;
-
-		case(PacketTypes::EditProfilePacket):
-			if (account->checkPassword(profile->getUsername()))
-			{
-				profile->editProfile(CurrentPacket.getData());
-			}
-			else
-			{
+				account = new Password(CurrentPacket.getData());
 				CurrentPacket.setData("");
-				CurrentPacket.setPacketType(PacketTypes::LoginRequestPacket);
+				if (account->checkPassword(account->getUsername()))
+				{
+					CurrentPacket.setPacketType(PacketTypes::LoginSuccessPacket);
+				}
+				else
+				{
+					CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
+				}
 				server.changeTxBuffer(CurrentPacket.SerializeData());
 				server.sendMsg();
+				break;
 			}
-			break;
 
-		case(PacketTypes::VotePacket):
-			profile = new Profile((CurrentPacket.getData()));
-			vote = new Vote(*profile);
-			break;
+			case(PacketTypes::CreateProfilePacket): //profile packet
+				profile = new Profile((CurrentPacket.getData())); //creates a profile from the packet
+				break;
 
-		case(PacketTypes::ProfileRequestPacket):
-			profile = new Profile((CurrentPacket.getData()));
-			memcpy(conversion, profile, sizeof(Profile));
-			CurrentPacket.setData(conversion);
-			server.changeTxBuffer(CurrentPacket.SerializeData());
-			server.sendMsg();
-			break;
-		
+			case(PacketTypes::EditProfilePacket):
+				if (account->checkPassword(profile->getUsername()))
+				{
+					profile->editProfile(CurrentPacket.getData());
+				}
+				else
+				{
+					CurrentPacket.setData("");
+					CurrentPacket.setPacketType(PacketTypes::LoginRequestPacket);
+					server.changeTxBuffer(CurrentPacket.SerializeData());
+					server.sendMsg();
+				}
+				break;
+
+			case(PacketTypes::VotePacket):
+				profile = new Profile((CurrentPacket.getData()));
+				vote = new Vote(*profile);
+				break;
+
+			case(PacketTypes::ProfileRequestPacket):
+				profile = new Profile((CurrentPacket.getData()));
+				memcpy(conversion, profile, sizeof(Profile));
+				CurrentPacket.setData(conversion);
+				server.changeTxBuffer(CurrentPacket.SerializeData());
+				server.sendMsg();
+				break;
+			}
+
+		}
 	} while (bytesReceived > 0);
 
 	server.closeServer();
