@@ -8,7 +8,7 @@
 using namespace std;
 
 class ServerConnection {
-	Header head;
+	Packet head;
 	int CRC;
 	char* TxBuffer;
 	char* RxBuffer;
@@ -28,5 +28,5 @@ public:
 	int setConnectionSocket();
 	char* getRxBuffer();
 	void closeServer();
-	bool checkIDInFIle(const std::string& filename, int searchID);
+	bool checkIDInFile(const std::string& filename, int searchID);
 };
