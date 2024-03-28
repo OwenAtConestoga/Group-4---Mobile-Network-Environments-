@@ -26,5 +26,5 @@ public:
 	int setConnectionSocket();
 	char* getRxBuffer();
 	void closeServer();
-	bool checkIDInFIle(const std::string& filename, int searchID);
+	bool checkIDInile(const std::string& filename, int searchID);
 };

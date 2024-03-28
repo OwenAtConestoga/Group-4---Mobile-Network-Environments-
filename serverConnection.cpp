@@ -82,7 +82,7 @@ void ServerConnection::closeServer()
 	WSACleanup();
 }
 
-bool ServerConnection::checkIDInFIle(const std::string& filename, int searchID) {
+bool ServerConnection::checkIDInFile(const std::string& filename, int searchID) {
 	std::ifstream file(filename);
 	std::string line;
 	if (!file.is_open()) 
