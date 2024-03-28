@@ -1,5 +1,6 @@
 ﻿#include <windows.networking.sockets.h>
 #include <iostream>
+#include <sstream>
 #include "createProfile.h"
 #include "ReadDataServer.h"
 #include "SendDataServer.h"
@@ -33,59 +34,62 @@ int main()
 	do 
 	{
 		bytesReceived = server.recvMsg();
-		server.changeRxBuffer(server.getRxBuffer() + '\0');
-		CurrentPacket.DeserializeData(server.getRxBuffer());
-
-		switch (CurrentPacket.getPacketType())
+		if (bytesReceived > 0)
 		{
-		case(PacketTypes::LoginRequestPacket):
-		{
-			account = new Password(CurrentPacket.getData());
-			CurrentPacket.setData("");
-			if (account->checkPassword(account->getUsername()))
-			{
-				CurrentPacket.setPacketType(PacketTypes::LoginSuccessPacket);
-			}
-			else
-			{
-				CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
-			}
-			server.changeTxBuffer(CurrentPacket.SerializeData());
-			server.sendMsg();
-			break;
-		}
+			server.changeRxBuffer(server.getRxBuffer() + '\0');
+			CurrentPacket.DeserializeData(server.getRxBuffer());
 
-		case(PacketTypes::CreateProfilePacket): //profile packet
-			profile = new Profile((CurrentPacket.getData())); //creates a profile from the packet
-			profile->saveInfoToFile("profile.csv");
-			break;
-
-		case(PacketTypes::EditProfilePacket):
-			if (account->checkPassword(profile->getUsername()))
+			switch (CurrentPacket.getPacketType())
 			{
-				profile->editProfile(CurrentPacket.getData());
-			}
-			else
+			case(PacketTypes::LoginRequestPacket):
 			{
+				account = new Password(CurrentPacket.getData());
 				CurrentPacket.setData("");
-				CurrentPacket.setPacketType(PacketTypes::LoginRequestPacket);
+				if (account->checkPassword(account->getUsername()))
+				{
+					CurrentPacket.setPacketType(PacketTypes::LoginSuccessPacket);
+				}
+				else
+				{
+					CurrentPacket.setPacketType(PacketTypes::NoAccessPacket);
+				}
 				server.changeTxBuffer(CurrentPacket.SerializeData());
 				server.sendMsg();
+				break;
 			}
-			break;
 
-		case(PacketTypes::VotePacket):
-			profile = new Profile((CurrentPacket.getData()));
-			vote = new Vote(*profile);
-			break;
+			case(PacketTypes::CreateProfilePacket): //profile packet
+				profile = new Profile((CurrentPacket.getData())); //creates a profile from the packet
+				profile->saveInfoToFile("profile.csv");
+				break;
 
-		case(PacketTypes::ProfileRequestPacket):
-			profile = new Profile((CurrentPacket.getData()));
-			memcpy(conversion, profile, sizeof(Profile));
-			CurrentPacket.setData(conversion);
-			server.changeTxBuffer(CurrentPacket.SerializeData());
-			server.sendMsg();
-			break;
+			case(PacketTypes::EditProfilePacket):
+				if (account->checkPassword(profile->getUsername()))
+				{
+					profile->editProfile(CurrentPacket.getData());
+				}
+				else
+				{
+					CurrentPacket.setData("");
+					CurrentPacket.setPacketType(PacketTypes::LoginRequestPacket);
+					server.changeTxBuffer(CurrentPacket.SerializeData());
+					server.sendMsg();
+				}
+				break;
+
+			case(PacketTypes::VotePacket):
+				profile = new Profile((CurrentPacket.getData()));
+				vote = new Vote(*profile);
+				break;
+
+			case(PacketTypes::ProfileRequestPacket):
+				profile = new Profile((CurrentPacket.getData()));
+				memcpy(conversion, profile, sizeof(Profile));
+				CurrentPacket.setData(conversion);
+				server.changeTxBuffer(CurrentPacket.SerializeData());
+				server.sendMsg();
+				break;
+			}
 		}
 	} while (bytesReceived > 0);
 
