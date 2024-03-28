@@ -1,11 +1,14 @@
 #pragma once
 #include "structDefinitions.h"
+#include <vector>
 class Vote {
 	Profile votedProfile;
+    int lineNumber;
 public:
 	void addVote(int id) {
-        int lineNumber = 0;
-		std::string dataAsString = checkIDInFile("profile.csv", id, &lineNumber);
+        lineNumber = 0;
+		std::string dataAsString = GetDataFromID("profile.csv", id);
+
 		char* data = (char*)calloc(dataAsString.length(), sizeof(char));
 		strcpy(data, dataAsString.c_str());
 		votedProfile.userName = strtok(data, ",");
@@ -15,62 +18,76 @@ public:
 		votedProfile.userClass = strtok(NULL, ",");
 		votedProfile.id = atoi(strtok(NULL, ","));
 		votedProfile.voteCount = atoi(strtok(NULL, ","));
-        saveInfoToFile("profiles.csv", lineNumber);
+        saveInfoToFile("profiles.csv");
 	}
-    std::string checkIDInFile(const std::string& filename, int searchID, int* lineNumber)
-    {
-        std::ifstream file(filename);
+    std::string GetDataFromID(const std::string& fileName, int searchID) {
+        lineNumber = 0;
+        std::ifstream file(fileName);
         std::string line;
+
         if (!file.is_open()) {
-            std::cerr << "Can't Open This File" << std::endl;
-            return "-1";
+            std::cerr << "Unable to open file: " << fileName << std::endl;
+            return "";
         }
-        while (getline(file, line)) {
-            std::stringstream ss(line);
-            std::string item;
-            // Split the line by commas
-            while (getline(ss, item, ',')) {
-                try {
-                    int fileID = std::stoi(item);    // Convert String to Integer
-                    if (fileID == searchID) {
-                        return line; // Find ID
-                    }
-                    else {
-                        lineNumber++;
-                    }
+
+        while (std::getline(file, line)) {
+            std::istringstream lineStream(line);
+            std::string currentIDStr;
+            std::getline(lineStream, currentIDStr, ',');
+
+            try {
+                int currentID = std::stoi(currentIDStr);
+                if (currentID == searchID) {
+                    return line;
                 }
-                catch (const std::invalid_argument& ia) {
-                    // Ignore if conversion fails
-                }
+                lineNumber++;
+            }
+            catch (const std::invalid_argument& e) {
+                continue;
+            }
+            catch (const std::out_of_range& e) {
+                continue;
             }
         }
 
-        return "-1"; // Can't find ID
+        return "";
     }
-    void saveInfoToFile(const std::string& filename, int skipUntilLine) {
-        std::ifstream infile(filename);
+    void saveInfoToFile(const std::string& filename) {
+        std::ifstream inFile(filename); // Open file for reading
+        if (!inFile.is_open()) {
+            std::cerr << "Error opening file.\n";
+            return;
+        }
+
+        std::vector<std::string> lines;
         std::string line;
-        int lineCount = 0;
+        int currentLineNumber = 1;
 
-        while (std::getline(infile, line) && lineCount < skipUntilLine) {
-            lineCount++;
+        // Read each line from the file and store it in a vector
+        while (std::getline(inFile, line)) {
+            if (currentLineNumber == lineNumber) {
+                // Replace the content of the line at the specified line number
+                lines.push_back((string)votedProfile);
+            }
+            else {
+                lines.push_back(line);
+            }
+            currentLineNumber++;
         }
-        infile.close();
 
-        if (lineCount < skipUntilLine) {
-            std::cerr << "Line number to skip exceeds total lines in the file." << std::endl;
+        inFile.close();
+
+        // Write the modified content back to the file
+        std::ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            std::cerr << "Error opening file.\n";
             return;
         }
 
-        std::ofstream file(filename, std::ios_base::app); // Open file in append mode
-        if (!file.is_open()) {
-            std::cerr << "Can't Open File: " << filename << std::endl;
-            return;
+        for (const auto& line : lines) {
+            outFile << line << '\n';
         }
 
-        file << votedProfile.userName << ',' << votedProfile.firstName << ',' << votedProfile.lastName << ','
-            << votedProfile.bio << ',' << votedProfile.userClass << ',' << votedProfile.id << ',' << votedProfile.voteCount << std::endl;
-
-        file.close(); // Close the file
+        outFile.close();
     }
 };

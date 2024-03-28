@@ -2,21 +2,24 @@
 #include <windows.networking.sockets.h>
 #include <iostream>
 #include "structDefinitions.h"
+#include "ReadDataServer.h"
+#include "SendDataServer.h"
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
 
 class ServerConnection {
-	Header head;
 	int CRC;
 	char* TxBuffer;
 	char* RxBuffer;
+	SendDataServer *SDS;
+	ReadDataServer *RDS;
 	Packet pkt;
 	SOCKET ServerSocket;
 	SOCKET ConnectionSocket;
 
-
 public:
+	ServerConnection();
 	int socketCreateBind();
 	void socketCleanUp(SOCKET);
 	int socketListenConnect();
@@ -24,7 +27,6 @@ public:
 	void sendMsg();
 	int setServerSocket(SOCKET);
 	int setConnectionSocket();
-	char* getRxBuffer();
+	void changeTxBuffer(char* newTx);
 	void closeServer();
-	bool checkIDInile(const std::string& filename, int searchID);
 };

@@ -18,40 +18,40 @@ public:
     createProfile(char* data, int& totalsize)
         : TotalSize(totalsize)
     {
-        std::istringstream dataStream(data);
-        std::getline(dataStream, profile.userName, ',');
-        std::getline(dataStream, profile.firstName, ',');
-        std::getline(dataStream, profile.lastName, ',');
-        std::getline(dataStream, profile.bio, ',');
-        std::getline(dataStream, profile.userClass, ',');
-        std::string idStr, voteCountStr;
-        std::getline(dataStream, idStr, ',');
-        profile.id = std::stoi(idStr);
-        std::getline(dataStream, voteCountStr, ',');
-        profile.voteCount = std::stoi(voteCountStr);
+        istringstream dataStream(data);
+        getline(dataStream, profile.userName, ',');
+        getline(dataStream, profile.firstName, ',');
+        getline(dataStream, profile.lastName, ',');
+        getline(dataStream, profile.bio, ',');
+        getline(dataStream, profile.userClass, ',');
+        string idStr, voteCountStr;
+        getline(dataStream, idStr, ',');
+        profile.id = stoi(idStr);
+        getline(dataStream, voteCountStr, ',');
+        profile.voteCount = stoi(voteCountStr);
     }
 
     createProfile(int profileID, int& totalsize)
         : TotalSize(totalsize)
     {
-        std::string dataAsString = checkIDInFile("profile.csv", profileID);
+        string dataAsString = checkIDInFile("profile.csv", profileID);
         if (dataAsString.empty())
         {
             std::cerr << "Profile with ID " << profileID << " not found." << std::endl;
             return;
         }
-        std::istringstream dataStream(dataAsString);
-        std::getline(dataStream, profile.userName, ',');
-        std::getline(dataStream, profile.firstName, ',');
-        std::getline(dataStream, profile.lastName, ',');
-        std::getline(dataStream, profile.bio, ',');
-        std::getline(dataStream, profile.userClass, ',');
+        istringstream dataStream(dataAsString);
+        getline(dataStream, profile.userName, ',');
+        getline(dataStream, profile.firstName, ',');
+        getline(dataStream, profile.lastName, ',');
+        getline(dataStream, profile.bio, ',');
+        getline(dataStream, profile.userClass, ',');
 
-        std::string idStr, voteCountStr;
-        std::getline(dataStream, idStr, ',');
-        profile.id = std::stoi(idStr);
-        std::getline(dataStream, voteCountStr, ',');
-        profile.voteCount = std::stoi(voteCountStr);
+        string idStr, voteCountStr;
+        getline(dataStream, idStr, ',');
+        profile.id = stoi(idStr);
+        getline(dataStream, voteCountStr, ',');
+        profile.voteCount = stoi(voteCountStr);
     }
 
     createProfile() :
@@ -65,14 +65,6 @@ public:
         profile.id = 0;
         profile.voteCount = 0;
     }
-
-
-    void setVoteCount(int newVoteCount)
-    {
-        profile.voteCount = newVoteCount;
-    }
-    int getVoteCount() { return profile.voteCount; }
-    std::string getUsername() { return profile.userName; }
 
     std::string checkIDInFile(const std::string& filename, int searchID) {
         std::ifstream file(filename);
@@ -106,15 +98,14 @@ public:
     }
 
     void saveInfoToFile(const std::string& filename) {
-        if (checkIDInFile(filename, profile.id) == "-1") {
+        if (checkIDInFile(filename, profile.id) == "") {
             std::ofstream file(filename, std::ios_base::app); // Open file in append mode
             if (!file.is_open()) {
                 std::cerr << "Can't Open File: " << filename << std::endl;
                 return;
             }
 
-            file << profile.userName << ',' << profile.firstName << ',' << profile.lastName << ','
-                << profile.bio << ',' << profile.userClass << ',' << profile.id << ',' << profile.voteCount << std::endl;
+            file << (string)profile;
 
             file.close(); // Close the file
         }

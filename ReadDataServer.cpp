@@ -1,14 +1,10 @@
 #include "ReadDataServer.h"
 #include "Logclass.h"
-ReadDataServer::ReadDataServer(string RX, int& Size, Profile newProfile, Packet newPkt)
+#include <stdlib.h>
+
+ReadDataServer::ReadDataServer(int& Size, Packet newPKT) : TotalSize(Size)
 {
-    RxBuffer = RX;
-    TotalSize = (int*)Size;
-    profile = (Profile*)calloc(1, sizeof(Profile));
-    profile = &newProfile;
-    pkt.CRC = newPkt.CRC;
-    pkt.dataField = newPkt.dataField;
-    pkt.Head = newPkt.Head;
+    memcpy(&pkt, &newPKT, sizeof(Packet));
 }
 
 void ReadDataServer::DeserializeData(char* buffer) {
@@ -29,7 +25,30 @@ void ReadDataServer::DeserializeData(char* buffer) {
     memcpy(&pkt.CRC, buffer + sizeof(Header) + pkt.Head.NumOfBytes, sizeof(pkt.CRC));
 }
 
-void ReadDataServer::logFile()
+bool ReadDataServer::canAccessData()
 {
-    LogClass log((string)"log.csv", (int&)TotalSize);
+    return LOS.isLoggedIn();
+}
+
+void ReadDataServer::login(char* loginData)
+{
+    pass = new Password(loginData);
+    LOS.Login(pass->getUsername(), pass->checkPassword());
+    logFile(serverFeedBack(true));
+}
+
+void ReadDataServer::logFile(int serverFeedback)
+{
+    LogClass* log = new LogClass((string)"log.csv", (int&)TotalSize);
+    string toBeLogged = RxBuffer + "| Code: " + to_string(serverFeedback);
+    log->PrintToFile(toBeLogged);
+    delete[] log;
+}
+
+int ReadDataServer::serverFeedBack(bool successful)
+{
+    if (successful) {
+        return 200;
+    }
+    return 404;
 }

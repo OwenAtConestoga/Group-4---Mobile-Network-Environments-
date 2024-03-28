@@ -19,9 +19,9 @@ public:
 	}
 	string getUsername() { return username; }
 	string getPassword() { return password; }
-	bool checkPassword(string usernameChecked)
+	bool checkPassword()
 	{
-		if (password.empty() || username.empty() || !username._Equal(usernameChecked))
+		if (password.empty() || username.empty())
 		{
 			return false;
 		}

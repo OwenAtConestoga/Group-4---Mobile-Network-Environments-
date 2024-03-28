@@ -2,10 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include "createProfile.h"
-#include "ReadDataServer.h"
-#include "SendDataServer.h"
 #include "serverConnection.h"
-#include "header.h"
 #include "vote.h"
 #include "Password.h"
 #pragma comment(lib, "Ws2_32.lib")
@@ -21,8 +18,6 @@ int main()
 	Password* account;
 	Vote* vote = (Vote*)calloc(1, sizeof(Vote));
 	Profile* profile = (Profile*)calloc(1, sizeof(profile));
-	SendDataServer SDS;
-	ReadDataServer RDS;
 	// Sets up the server
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) { return 0; }
 	if (server.setServerSocket(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) != 0) { return 0; }
@@ -33,6 +28,7 @@ int main()
 	// Accepts and recieves messages
 	do 
 	{
+
 		bytesReceived = server.recvMsg();
 		if (bytesReceived > 0)
 		{

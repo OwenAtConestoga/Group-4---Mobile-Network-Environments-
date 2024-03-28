@@ -6,19 +6,22 @@ using namespace std;
 
 class SendDataServer
 {
-	string RxBuffer;
-	int& TotalSize;
     Packet pkt;
-	int ID;
 
 public:
+    int& TotalSize;
+    SendDataServer(int& Size, char* newPKT) : TotalSize(Size)
+    {
+        memcpy(&pkt, &newPKT, sizeof(Packet));
+    }
+
     char* SerializeData()
     {
         // Set to the total number of bytes
         pkt.Head.Length = pkt.dataField.length();
         pkt.CRC = CalculateCRC();
 
-        int TotalSize = sizeof(Header) + pkt.Head.Length + sizeof(pkt.CRC);
+        TotalSize = sizeof(Header) + pkt.Head.Length + sizeof(pkt.CRC);
         pkt.Head.NumOfBytes = TotalSize;
         // Allocate memory to buffer
         char* TxBuffer = new char[TotalSize];

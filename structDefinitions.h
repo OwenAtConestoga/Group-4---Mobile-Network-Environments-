@@ -28,6 +28,12 @@ struct Profile
     std::string userClass;
     int id;
     int voteCount;
+
+    operator string() const {
+        std::ostringstream oss;
+        oss << userName << ',' << firstName << ',' << lastName << ',' << bio << ',' << userClass << ',' << id << ',' << voteCount;
+        return oss.str();
+    }
 };
 
 struct Packet 

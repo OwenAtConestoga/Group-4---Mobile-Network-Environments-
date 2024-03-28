@@ -1,13 +1,20 @@
 #pragma once
 #include <stdlib.h>
+#include "Password.h"
+#include "LogOutServer.h"
 #include "structDefinitions.h"
 
 class ReadDataServer {
-    int* TotalSize;
-    Profile *profile;
+    int& TotalSize;
     Packet pkt;
+    Password *pass;
+    LogOutServer LOS;
 public:
     string RxBuffer;
-    ReadDataServer(string, int&, Profile, Packet);
+    ReadDataServer(int&, Packet);
     void DeserializeData(char* buffer);
+    void logFile(int);
+    int serverFeedBack(bool sucessful);
+    bool canAccessData();
+    void login(char* loginData);
 };

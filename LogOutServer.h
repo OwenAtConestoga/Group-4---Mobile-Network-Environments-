@@ -3,9 +3,25 @@
 using namespace std;
 class LogOutServer {
 	bool isConnection;
-	int id;
+	string userNameLoggedIn;
 public:
 	void LogOut() {
 		isConnection = false;
+	}
+	void Login(string username, bool success)
+	{
+		if (success)
+		{
+			isConnection = success;
+			userNameLoggedIn = username;
+		}
+	}
+	bool isLoggedIn()
+	{
+		return isConnection;
+	}
+	string currentUser()
+	{
+		return userNameLoggedIn;
 	}
 };
