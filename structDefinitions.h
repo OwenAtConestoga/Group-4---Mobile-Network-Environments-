@@ -45,6 +45,7 @@ struct Packet
 {
     Header Head;
     string dataField;
+    Profile profile; // Added the Profile structure into the Packet
     unsigned int CRC;
     const unsigned int CONSTCRC = 0xFF00FF00;
 };
