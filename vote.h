@@ -1,25 +1,27 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "structDefinitions.h"
 #include <vector>
 class Vote {
-	Profile votedProfile;
+    Profile votedProfile;
     int lineNumber;
 public:
-	void addVote(int id) {
+    void addVote(int id) {
         lineNumber = 0;
-		std::string dataAsString = GetDataFromID("profile.csv", id);
+        std::string dataAsString = GetDataFromID("profile.csv", id);
 
-		char* data = (char*)calloc(dataAsString.length(), sizeof(char));
-		strcpy(data, dataAsString.c_str());
-		votedProfile.userName = strtok(data, ",");
-		votedProfile.firstName = strtok(NULL, ",");
-		votedProfile.lastName = strtok(NULL, ",");
-		votedProfile.bio = strtok(NULL, ",");
-		votedProfile.userClass = strtok(NULL, ",");
-		votedProfile.id = atoi(strtok(NULL, ","));
-		votedProfile.voteCount = atoi(strtok(NULL, ","));
+        char* data = (char*)calloc(dataAsString.length(), sizeof(char));
+        strcpy(data, dataAsString.c_str());
+        votedProfile.userName = strtok(data, ",");
+        votedProfile.firstName = strtok(NULL, ",");
+        votedProfile.lastName = strtok(NULL, ",");
+        votedProfile.bio = strtok(NULL, ",");
+        votedProfile.userClass = strtok(NULL, ",");
+        votedProfile.id = atoi(strtok(NULL, ","));
+        votedProfile.voteCount = atoi(strtok(NULL, ","));
         saveInfoToFile("profiles.csv");
-	}
+    }
     std::string GetDataFromID(const std::string& fileName, int searchID) {
         lineNumber = 0;
         std::ifstream file(fileName);

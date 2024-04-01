@@ -1,5 +1,6 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
+
 #include <fstream>
 #include <string>
 #define MAX_USERNAME_LENGTH 30
@@ -31,7 +32,7 @@ public:
 			file.getline(line, MAX_USERNAME_LENGTH);
 			char* token = strtok(line, ",");
 			char* pass = strtok(NULL, ",");
-			if (strcmp(token, username.c_str()) == 0) 
+			if (strcmp(token, username.c_str()) == 0)
 			{
 				if (strcmp(pass, password.c_str()) == 0)
 				{

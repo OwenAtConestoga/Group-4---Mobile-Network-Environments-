@@ -1,5 +1,5 @@
 #pragma once
-#pragma once
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <string>
 #include <fstream>
@@ -110,6 +110,7 @@ public:
             file.close(); // Close the file
         }
     }
-    static int defaultTotalSize;
+    static int getDefaultTotalSize() { return defaultTotalSize; }
+
 };
 int createProfile::defaultTotalSize = 0;                    // Initialize static member outside the class

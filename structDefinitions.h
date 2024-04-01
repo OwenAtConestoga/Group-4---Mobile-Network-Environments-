@@ -1,5 +1,7 @@
 #pragma once
 #include <iostream>
+#include <sstream>
+
 using namespace std;
 enum class PacketTypes {
     CreateProfilePacket,
@@ -19,7 +21,7 @@ struct Header
     int NumOfBytes;
 };
 
-struct Profile 
+struct Profile
 {
     std::string userName;
     std::string firstName;
@@ -29,6 +31,9 @@ struct Profile
     int id;
     int voteCount;
 
+    //Initialize all member variables
+    Profile() : userName(""), firstName(""), lastName(""), bio(""), userClass(""), id(0), voteCount(0) {}
+
     operator string() const {
         std::ostringstream oss;
         oss << userName << ',' << firstName << ',' << lastName << ',' << bio << ',' << userClass << ',' << id << ',' << voteCount;
@@ -36,7 +41,7 @@ struct Profile
     }
 };
 
-struct Packet 
+struct Packet
 {
     Header Head;
     string dataField;

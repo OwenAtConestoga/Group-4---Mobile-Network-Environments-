@@ -12,8 +12,8 @@ class ServerConnection {
 	int CRC;
 	char* TxBuffer;
 	char* RxBuffer;
-	SendDataServer *SDS;
-	ReadDataServer *RDS;
+	SendDataServer* SDS;
+	ReadDataServer* RDS;
 	Packet pkt;
 	SOCKET ServerSocket;
 	SOCKET ConnectionSocket;

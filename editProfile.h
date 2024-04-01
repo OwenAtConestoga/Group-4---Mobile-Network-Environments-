@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "structDefinitions.h"
 #include <string>
 #include <fstream>
@@ -16,12 +18,13 @@ public:
     {
         fileName = filename;
         std::string dataAsString = GetDataFromID(profileID);
-        if (dataAsString == "")
+        if (dataAsString.empty())
         {
             return;
         }
-        char* data = (char*)calloc(1, sizeof(char) * dataAsString.length());
-        strcpy(data, dataAsString.c_str());
+        std::vector<char> buffer(dataAsString.begin(), dataAsString.end());
+        buffer.push_back('\0');
+        char* data = buffer.data();
         profile.userName = strtok(data, ",");
         profile.firstName = strtok(NULL, ",");
         profile.lastName = strtok(NULL, ",");
@@ -29,12 +32,12 @@ public:
         profile.userClass = strtok(NULL, ",");
         profile.id = atoi(strtok(NULL, ","));
         profile.voteCount = atoi(strtok(NULL, ","));
-        TotalSize = (int*)totalsize;
-        idExists == true;
+        TotalSize = &totalsize;
+        idExists = true;
     }
     void updateProfile(char* username = NULL, char* firstname = NULL, char* lastname = NULL, char* bio = NULL, char* userclass = NULL, int voteCount = NULL)
     {
-        profile.userName = username ? username:profile.userName;
+        profile.userName = username ? username : profile.userName;
         profile.firstName = firstname ? firstname : profile.firstName;
         profile.lastName = lastname ? lastname : profile.lastName;
         profile.bio = bio ? bio : profile.bio;

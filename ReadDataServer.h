@@ -7,7 +7,7 @@
 class ReadDataServer {
     int& TotalSize;
     Packet pkt;
-    Password *pass;
+    Password* pass;
     LogOutServer LOS;
 public:
     string RxBuffer;
