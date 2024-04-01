@@ -20,8 +20,9 @@ int ServerConnection::socketCreateBind()
 	{
 		socketCleanUp(ServerSocket);
 		WSACleanup();
-		return 0;
+		return -1; // Indicating an error occurred
 	}
+	return 0; // Indicating success.
 }
 
 void ServerConnection::socketCleanUp(SOCKET socket)
@@ -35,8 +36,9 @@ int ServerConnection::socketListenConnect()
 	{
 		socketCleanUp(ServerSocket);
 		WSACleanup();
-		return 0;
+		return -1; // Indicating an error occurred
 	}
+	return 0; // Indicating success
 }
 
 int ServerConnection::recvMsg()
