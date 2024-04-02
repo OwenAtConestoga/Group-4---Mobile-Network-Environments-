@@ -112,5 +112,4 @@ public:
     }
     static int getDefaultTotalSize() { return defaultTotalSize; }
 
-};
-int createProfile::defaultTotalSize = 0;                    // Initialize static member outside the class
+}; 
