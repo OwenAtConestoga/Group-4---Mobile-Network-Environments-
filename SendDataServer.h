@@ -1,0 +1,59 @@
+#pragma once
+#include "serverConnection.h"
+#include "createProfile.h"
+#include "structDefinitions.h"
+using namespace std;
+
+class SendDataServer
+{
+    Packet pkt;
+
+public:
+    int& TotalSize;
+    SendDataServer(int& Size, char* newPKT) : TotalSize(Size)
+    {
+        memcpy(&pkt, &newPKT, sizeof(Packet));
+    }
+
+    char* SerializeData() {
+
+        pkt.dataField = static_cast<string>(pkt.profile);
+
+        // Find Length
+        pkt.Head.Length = static_cast<int>(pkt.dataField.length());
+        pkt.CRC = CalculateCRC();
+
+        // Find Total Size
+        TotalSize = sizeof(Header) + pkt.Head.Length + sizeof(pkt.CRC);
+        pkt.Head.NumOfBytes = TotalSize;
+
+        char* TxBuffer = new char[TotalSize];
+
+        // Header
+        memcpy(TxBuffer, &pkt.Head, sizeof(Header));
+
+        // Data
+        memcpy(TxBuffer + sizeof(Header), pkt.dataField.c_str(), pkt.Head.Length);
+
+        // CRC
+        memcpy(TxBuffer + sizeof(Header) + pkt.Head.Length, &pkt.CRC, sizeof(pkt.CRC));
+
+        return TxBuffer;
+    }
+
+    unsigned int CalculateCRC() {
+        unsigned int crc = 0;  // Initial CRC value
+        for (int i = 0; i < pkt.Head.Length; ++i) {
+            crc ^= pkt.dataField[i];
+            for (int j = 0; j < 8; ++j) {
+                if (crc & 0x00000001) {
+                    crc = (crc >> 1) ^ pkt.CONSTCRC;
+                }
+                else {
+                    crc >>= 1;
+                }
+            }
+        }
+        return crc;
+    }
+};

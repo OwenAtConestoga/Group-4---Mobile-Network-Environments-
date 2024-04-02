@@ -1,8 +1,7 @@
 #include <windows.networking.sockets.h>
 #pragma comment(lib, "Ws2_32.lib")
 
-#include "header.h"
-#include "Password.h"
+#include "../Group-4---Mobile-Network-Environments-/header.h"
 
 class ClientConnection{
 

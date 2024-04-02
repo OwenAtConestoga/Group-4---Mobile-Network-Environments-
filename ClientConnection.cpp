@@ -95,7 +95,7 @@ void ClientConnection::receivePacket(Packet &packet){
 	int totalSize=numOfBytes;
 	char* totalBuffer = new char[totalSize];
 	
-	int bytesReceived = recv(clientSocket, totalBuffer, totalSize, 0);
+	bytesReceived = recv(clientSocket, totalBuffer, totalSize, 0);
 	if ((bytesReceived) <= 0 ){
 		delete[] totalBuffer;
 		return;

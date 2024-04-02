@@ -1,5 +1,14 @@
 #include "serverConnection.h"
-#include <sstream>
+#include <string>
+
+ServerConnection::ServerConnection()
+{
+	RxBuffer = (char*)calloc(1, sizeof(Packet) + pkt.Head.Length);
+	TxBuffer = (char*)calloc(1, sizeof(Packet) + pkt.Head.Length);
+	SDS = (SendDataServer*)calloc(1, sizeof(Packet) + pkt.Head.Length + sizeof(int));
+	RDS = (ReadDataServer*)calloc(1, sizeof(Packet) + pkt.Head.Length + sizeof(int) + sizeof(Password) + sizeof(LogOutServer));
+}
+
 int ServerConnection::socketCreateBind()
 {
 	sockaddr_in SvrAddr;
@@ -11,8 +20,9 @@ int ServerConnection::socketCreateBind()
 	{
 		socketCleanUp(ServerSocket);
 		WSACleanup();
-		return 0;
+		return -1; // Indicating an error occurred
 	}
+	return 0; // Indicating success.
 }
 
 void ServerConnection::socketCleanUp(SOCKET socket)
@@ -26,28 +36,23 @@ int ServerConnection::socketListenConnect()
 	{
 		socketCleanUp(ServerSocket);
 		WSACleanup();
-		return 0;
+		return -1; // Indicating an error occurred
 	}
+	return 0; // Indicating success
 }
 
 int ServerConnection::recvMsg()
 {
-	return recv(ConnectionSocket, RxBuffer, sizeof(RxBuffer), 0);
+	int bytes = recv(ConnectionSocket, RxBuffer, sizeof(RxBuffer), 0);
+	RDS->DeserializeData(RxBuffer);
+	return bytes;
 }
 
 void ServerConnection::sendMsg()
 {
-	send(ConnectionSocket, TxBuffer, sizeof(TxBuffer), 0);
-}
-
-void ServerConnection::changeTxBuffer(char* input)
-{
-	TxBuffer = input;
-}
-
-void ServerConnection::changeRxBuffer(char* output)
-{
-	RxBuffer = output;
+	int size = sizeof(TxBuffer);
+	SDS = new SendDataServer(size, TxBuffer);
+	send(ConnectionSocket, SDS->SerializeData(), sizeof(SDS->TotalSize), 0);
 }
 
 int ServerConnection::setServerSocket(SOCKET newSocket)
@@ -73,9 +78,9 @@ int ServerConnection::setConnectionSocket()
 	return 0;
 }
 
-char* ServerConnection::getRxBuffer()
+void ServerConnection::changeTxBuffer(char* newTx)
 {
-	return RxBuffer;
+	strcpy(TxBuffer, newTx);
 }
 
 void ServerConnection::closeServer() 
@@ -83,36 +88,4 @@ void ServerConnection::closeServer()
 	socketCleanUp(ServerSocket);
 	socketCleanUp(ConnectionSocket);
 	WSACleanup();
-}
-
-bool ServerConnection::checkIDInFile(const std::string& filename, int searchID) {
-	std::ifstream file(filename);
-	std::string line;
-	if (!file.is_open()) 
-	{
-		std::cerr << "Can't Open This File" << std::endl;
-		return false;
-	}
-
-	while (getline(file, line)) 
-	{
-		std::stringstream ss(line);
-		std::string item;
-		getline(ss, item, ',');
-
-		try {
-			int fileID = std::stoi(item);	//Change String to Integer 
-
-			if (fileID == searchID) 
-			{
-				return true; // Find ID
-			}
-		}
-		catch (const std::invalid_argument& ia) 
-		{
-			std::cerr << "Wrong ID: " << item << std::endl;
-		}
-	}
-
-	return false; // Cant't find ID
 }

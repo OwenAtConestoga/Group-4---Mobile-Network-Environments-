@@ -1,14 +1,13 @@
 //Client.cpp
 //Matteo Filippone
-
+#define _CRT_SECURE_NO_WARNINGS
 #include <windows.networking.sockets.h>
 #pragma comment(lib, "Ws2_32.lib")
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "ClientConnection.h"
-#include "Password.h"
-#include "header.h"
+#include "../Group-4---Mobile-Network-Environments-/ClientConnection.h"
+#include "../Group-4---Mobile-Network-Environments-/header.h"
 
 void createProfile(ClientConnection &client, const std::string &username){
     std::string firstName, lastName, bio, userClass;
