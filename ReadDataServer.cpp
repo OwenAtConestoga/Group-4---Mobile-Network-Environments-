@@ -7,22 +7,33 @@ ReadDataServer::ReadDataServer(int& Size, Packet newPKT) : TotalSize(Size)
     memcpy(&pkt, &newPKT, sizeof(Packet));
 }
 
-void ReadDataServer::DeserializeData(char* buffer) {
-    if (buffer == NULL) {
+void ReadDataServer::DeserializeData(char* buffer) 
+{
+    if (buffer == NULL) 
+    {
         std::cerr << "Error: Null buffer pointer." << std::endl;
         return;
     }
+
     // Copy the header information from buffer to header
     memcpy(&pkt.Head, buffer, sizeof(Header));
 
-    // Allocate memory for dataField based on header.Length
-    pkt.dataField = new char[pkt.Head.Length];
+    std::string serializedProfile(buffer + sizeof(Header), pkt.Head.Length);
+    std::istringstream profileStream(serializedProfile);
 
-    // Copy the body from buffer to dataField
-    memcpy(&pkt.dataField, buffer + sizeof(Header), pkt.Head.Length);
+    // Extracting profile information from the serialized 
+    getline(profileStream, pkt.profile.userName, ',');
+    getline(profileStream, pkt.profile.firstName, ',');
+    getline(profileStream, pkt.profile.lastName, ',');
+    getline(profileStream, pkt.profile.bio, ',');
+    getline(profileStream, pkt.profile.userClass, ',');
+    std::string idStr, voteCountStr;
+    getline(profileStream, idStr, ',');
+    getline(profileStream, voteCountStr);
+    pkt.profile.id = std::stoi(idStr);
+    pkt.profile.voteCount = std::stoi(voteCountStr);
 
-    // Copy the CRC from buffer to CRC
-    memcpy(&pkt.CRC, buffer + sizeof(Header) + pkt.Head.NumOfBytes, sizeof(pkt.CRC));
+    memcpy(&pkt.CRC, buffer + sizeof(Header) + pkt.Head.Length, sizeof(pkt.CRC));
 }
 
 bool ReadDataServer::canAccessData()

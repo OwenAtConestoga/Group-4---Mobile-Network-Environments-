@@ -15,27 +15,29 @@ public:
         memcpy(&pkt, &newPKT, sizeof(Packet));
     }
 
-    char* SerializeData()
-    {
-        // Set to the total number of bytes
-        pkt.Head.Length = pkt.dataField.length();
+    char* SerializeData() {
+
+        pkt.dataField = static_cast<string>(pkt.profile);
+
+        // Find Length
+        pkt.Head.Length = static_cast<int>(pkt.dataField.length());
         pkt.CRC = CalculateCRC();
 
+        // Find Total Size
         TotalSize = sizeof(Header) + pkt.Head.Length + sizeof(pkt.CRC);
         pkt.Head.NumOfBytes = TotalSize;
-        // Allocate memory to buffer
+
         char* TxBuffer = new char[TotalSize];
 
-        // Copy the header information
+        // Header
         memcpy(TxBuffer, &pkt.Head, sizeof(Header));
 
-        // Copy the body
-        memcpy(TxBuffer + sizeof(Header), &pkt.dataField, pkt.Head.Length);
+        // Data
+        memcpy(TxBuffer + sizeof(Header), pkt.dataField.c_str(), pkt.Head.Length);
 
-        // Copy the CRC
-        memcpy(TxBuffer + sizeof(Header) + pkt.Head.NumOfBytes, &pkt.CRC, sizeof(pkt.CRC));
+        // CRC
+        memcpy(TxBuffer + sizeof(Header) + pkt.Head.Length, &pkt.CRC, sizeof(pkt.CRC));
 
-        // Return refence point to the packet
         return TxBuffer;
     }
 
