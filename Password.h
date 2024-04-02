@@ -2,7 +2,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <fstream>
-#include <string>
+#include <cstring>
+#include <sstream>
 #define MAX_USERNAME_LENGTH 30
 #define MAX_PASSWORD_LENGTH 30
 using namespace std;
@@ -15,30 +16,30 @@ class Password
 public:
 	Password(char* data)
 	{
-		username = strtok(data, ",");
-		password = strtok(NULL, ",");
+		istringstream ss(data);
+		getline(ss, username, ',');
+		getline(ss, password, ',');
 	}
 	string getUsername() { return username; }
 	string getPassword() { return password; }
 	bool checkPassword()
 	{
+		string user, pass;
 		if (password.empty() || username.empty())
 		{
 			return false;
 		}
 		ifstream file("users.csv");
 		char line[MAX_USERNAME_LENGTH + MAX_PASSWORD_LENGTH];
+		string lineAsString;
 		while (!file.eof()) {
 			file.getline(line, MAX_USERNAME_LENGTH);
-			char* token = strtok(line, ",");
-			char* pass = strtok(NULL, ",");
-			if (strcmp(token, username.c_str()) == 0)
-			{
-				if (strcmp(pass, password.c_str()) == 0)
-				{
-					return true;
-				}
-				break;
+			lineAsString = line;
+			istringstream ss(lineAsString);
+			getline(ss, user, ',');
+			getline(ss, pass, ',');
+			if (username == user && password == pass){
+				return true;
 			}
 		}
 		return false;

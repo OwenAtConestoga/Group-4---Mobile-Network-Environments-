@@ -27,7 +27,7 @@ public:
         TotalSize = sizeof(Header) + pkt.Head.Length + sizeof(pkt.CRC);
         pkt.Head.NumOfBytes = TotalSize;
 
-        char* TxBuffer = new char[TotalSize];
+        char* TxBuffer = (char*)calloc(TotalSize, sizeof(char));
 
         // Header
         memcpy(TxBuffer, &pkt.Head, sizeof(Header));

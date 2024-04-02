@@ -86,10 +86,10 @@ public:
                     return line;
                 }
             }
-            catch (const std::invalid_argument& e) {
+            catch (const std::invalid_argument&) {
                 continue;
             }
-            catch (const std::out_of_range& e) {
+            catch (const std::out_of_range&) {
                 continue;
             }
         }

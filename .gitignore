@@ -48,3 +48,4 @@
 *.filters
 *.user
 /SendDataServer.h
+/x64

@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "structDefinitions.h"
-#include <string>
+#include <cstring>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -18,20 +18,17 @@ public:
     {
         fileName = filename;
         std::string dataAsString = GetDataFromID(profileID);
-        if (dataAsString.empty())
-        {
-            return;
-        }
-        std::vector<char> buffer(dataAsString.begin(), dataAsString.end());
-        buffer.push_back('\0');
-        char* data = buffer.data();
-        profile.userName = strtok(data, ",");
-        profile.firstName = strtok(NULL, ",");
-        profile.lastName = strtok(NULL, ",");
-        profile.bio = strtok(NULL, ",");
-        profile.userClass = strtok(NULL, ",");
-        profile.id = atoi(strtok(NULL, ","));
-        profile.voteCount = atoi(strtok(NULL, ","));
+        istringstream dataStream(dataAsString);
+        getline(dataStream, profile.userName, ',');
+        getline(dataStream, profile.firstName, ',');
+        getline(dataStream, profile.lastName, ',');
+        getline(dataStream, profile.bio, ',');
+        getline(dataStream, profile.userClass, ',');
+        string idStr, voteCountStr;
+        getline(dataStream, idStr, ',');
+        profile.id = stoi(idStr);
+        getline(dataStream, voteCountStr, ',');
+        profile.voteCount = stoi(voteCountStr);
         TotalSize = &totalsize;
         idExists = true;
     }
@@ -107,10 +104,10 @@ public:
                 }
                 lineNumber++;
             }
-            catch (const std::invalid_argument& e) {
+            catch (const std::invalid_argument&) {
                 continue;
             }
-            catch (const std::out_of_range& e) {
+            catch (const std::out_of_range&) {
                 continue;
             }
         }

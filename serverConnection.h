@@ -1,4 +1,5 @@
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 #include <windows.networking.sockets.h>
 #include <iostream>
 #include "structDefinitions.h"

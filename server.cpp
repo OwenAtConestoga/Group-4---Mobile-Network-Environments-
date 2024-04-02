@@ -1,4 +1,5 @@
-﻿#include <windows.networking.sockets.h>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <windows.networking.sockets.h>
 #include <iostream>
 #include <sstream>
 #include "LogClass.h"

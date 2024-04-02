@@ -2,6 +2,9 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "structDefinitions.h"
+#include <cstring>
+#include <sstream>
+#include <fstream>
 #include <vector>
 class Vote {
     Profile votedProfile;
@@ -11,15 +14,17 @@ public:
         lineNumber = 0;
         std::string dataAsString = GetDataFromID("profile.csv", id);
 
-        char* data = (char*)calloc(dataAsString.length(), sizeof(char));
-        strcpy(data, dataAsString.c_str());
-        votedProfile.userName = strtok(data, ",");
-        votedProfile.firstName = strtok(NULL, ",");
-        votedProfile.lastName = strtok(NULL, ",");
-        votedProfile.bio = strtok(NULL, ",");
-        votedProfile.userClass = strtok(NULL, ",");
-        votedProfile.id = atoi(strtok(NULL, ","));
-        votedProfile.voteCount = atoi(strtok(NULL, ","));
+        istringstream dataStream(dataAsString);
+        getline(dataStream, votedProfile.userName, ',');
+        getline(dataStream, votedProfile.firstName, ',');
+        getline(dataStream, votedProfile.lastName, ',');
+        getline(dataStream, votedProfile.bio, ',');
+        getline(dataStream, votedProfile.userClass, ',');
+        string idStr, voteCountStr;
+        getline(dataStream, idStr, ',');
+        votedProfile.id = stoi(idStr);
+        getline(dataStream, voteCountStr, ',');
+        votedProfile.voteCount = stoi(voteCountStr);
         saveInfoToFile("profiles.csv");
     }
     std::string GetDataFromID(const std::string& fileName, int searchID) {
@@ -44,10 +49,10 @@ public:
                 }
                 lineNumber++;
             }
-            catch (const std::invalid_argument& e) {
+            catch (const std::invalid_argument&) {
                 continue;
             }
-            catch (const std::out_of_range& e) {
+            catch (const std::out_of_range&) {
                 continue;
             }
         }

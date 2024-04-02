@@ -5,6 +5,7 @@
 ReadDataServer::ReadDataServer(int& Size, Packet newPKT) : TotalSize(Size)
 {
     memcpy(&pkt, &newPKT, sizeof(Packet));
+    pass = (Password*)calloc(1, sizeof(Password));
 }
 
 void ReadDataServer::DeserializeData(char* buffer) 
@@ -53,7 +54,7 @@ void ReadDataServer::logFile(int serverFeedback)
     LogClass* log = new LogClass((string)"log.csv", (int&)TotalSize);
     string toBeLogged = RxBuffer + "| Code: " + to_string(serverFeedback);
     log->PrintToFile(toBeLogged);
-    delete[] log;
+    delete log;
 }
 
 int ReadDataServer::serverFeedBack(bool successful)
