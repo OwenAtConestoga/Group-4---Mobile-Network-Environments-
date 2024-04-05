@@ -2,12 +2,6 @@
 #include "Logclass.h"
 #include <stdlib.h>
 
-ReadDataServer::ReadDataServer(int& Size, Packet newPKT) : TotalSize(Size)
-{
-    memcpy(&pkt, &newPKT, sizeof(Packet));
-    pass = (Password*)calloc(1, sizeof(Password));
-}
-
 void ReadDataServer::DeserializeData(char* buffer) 
 {
     if (buffer == NULL) 
@@ -17,24 +11,9 @@ void ReadDataServer::DeserializeData(char* buffer)
     }
 
     // Copy the header information from buffer to header
-    memcpy(&pkt.Head, buffer, sizeof(Header));
-
-    std::string serializedProfile(buffer + sizeof(Header), pkt.Head.Length);
-    std::istringstream profileStream(serializedProfile);
-
-    // Extracting profile information from the serialized 
-    getline(profileStream, pkt.profile.userName, ',');
-    getline(profileStream, pkt.profile.firstName, ',');
-    getline(profileStream, pkt.profile.lastName, ',');
-    getline(profileStream, pkt.profile.bio, ',');
-    getline(profileStream, pkt.profile.userClass, ',');
-    std::string idStr, voteCountStr;
-    getline(profileStream, idStr, ',');
-    getline(profileStream, voteCountStr);
-    pkt.profile.id = std::stoi(idStr);
-    pkt.profile.voteCount = std::stoi(voteCountStr);
-
-    memcpy(&pkt.CRC, buffer + sizeof(Header) + pkt.Head.Length, sizeof(pkt.CRC));
+    memcpy(&pktClass.pkt , buffer, sizeof(Packet));
+    memcpy(&pktClass.profile, buffer + sizeof(Packet), pktClass.pkt.Head.profileLength);
+    memcpy(&pktClass.loginInfo, buffer + sizeof(Packet) + pktClass.pkt.Head.profileLength, pktClass.pkt.Head.acctLength);
 }
 
 bool ReadDataServer::canAccessData()
@@ -42,25 +21,46 @@ bool ReadDataServer::canAccessData()
     return LOS.isLoggedIn();
 }
 
-void ReadDataServer::login(char* loginData)
-{
-    pass = new Password(loginData);
-    LOS.Login(pass->getUsername(), pass->checkPassword());
-    logFile(serverFeedBack(true));
-}
-
-void ReadDataServer::logFile(int serverFeedback)
+void ReadDataServer::logFile(string info, int serverFeedback)
 {
     LogClass* log = new LogClass((string)"log.csv", (int&)TotalSize);
-    string toBeLogged = RxBuffer + "| Code: " + to_string(serverFeedback);
-    log->PrintToFile(toBeLogged);
+    string toBeLogged = "Response: " + to_string(serverFeedback);
+    log->PrintToFile(info + toBeLogged + "\n\n");
     delete log;
 }
 
-int ReadDataServer::serverFeedBack(bool successful)
+int ReadDataServer::serverFeedBack(ResponseCodes Code)
 {
-    if (successful) {
+    switch (Code) {
+    case(ResponseCodes::OK):
         return 200;
+        break;
+    case(ResponseCodes::ACCEPTED):
+        return 202;
+        break;
+    case(ResponseCodes::NOCONTENT):
+        return 204;
+        break;
+    case(ResponseCodes::UNAUTHORIZED):
+        return 401;
+        break;
+    case(ResponseCodes::NOTFOUND):
+        return 404;
+        break;
+    default:
+        return 0;
     }
-    return 404;
+}
+
+bool ReadDataServer::login(Account acct)
+{
+    currentAccount = new Password(acct);
+    LOS.Login(currentAccount->getUsername(), currentAccount->checkPassword());
+    logFile("--Login Attempt--\n", serverFeedBack(ResponseCodes::OK));
+    return LOS.isLoggedIn();
+}
+void ReadDataServer::LogOut()
+{
+    LOS.LogOut();
+    delete currentAccount;
 }

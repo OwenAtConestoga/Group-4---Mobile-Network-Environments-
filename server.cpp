@@ -15,9 +15,9 @@ using namespace std;
 int main() {
     ServerConnection server;
     WSAData wsaData;
+    packetClass* TxPacket;
     int bytesReceived;
     int totalSize = 0;      // Used for logging
-    LogClass logger("log.csv", totalSize);
 
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) { return 0; }
     if (server.setServerSocket(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) != 0) { return 0; }
@@ -31,40 +31,31 @@ int main() {
 
         if (bytesReceived > 0)
         {
-            Packet receivedPacket;
-
-            switch (receivedPacket.Head.packetType)
+            TxPacket = new packetClass();
+            
+            switch (server.RDS->pktClass.pkt.Head.packetType)
             {
             case PacketTypes::LoginRequestPacket:
             {
-                // Uses Password class to validate login credentials
-                char* data = const_cast<char*>(receivedPacket.dataField.c_str());
-                Password account(data);         // Constructs Password object
-                if (account.checkPassword())
+                if (server.RDS->login(server.RDS->pktClass.loginInfo))
                 {
-                    receivedPacket.Head.packetType = PacketTypes::LoginSuccessPacket;
-                    receivedPacket.dataField = "Login successful";
+                    TxPacket->pkt.Head.packetType = PacketTypes::LoginSuccessPacket;
                 }
                 else
                 {
-                    receivedPacket.Head.packetType = PacketTypes::NoAccessPacket;
-                    receivedPacket.dataField = "Login failed";
+                    TxPacket->pkt.Head.packetType = PacketTypes::NoAccessPacket;
                 }
-                logger.PrintToFile("Login Attempt: " + receivedPacket.dataField);       // Logs
-
+             
+                server.sendMsg(*TxPacket);
                 break;
             }
 
             case PacketTypes::CreateProfilePacket:
             {
-                // Uses createProfile class to creat new profile 
-                char* data = const_cast<char*>(receivedPacket.dataField.c_str());
-                createProfile profile(data, totalSize);         // Constructs createProfile object and parses profile data
-                profile.saveInfoToFile("profiles.csv");         // Saves into file
-                receivedPacket.Head.packetType = PacketTypes::LoginSuccessPacket;
-                receivedPacket.dataField = "Profile created successfully";
-                logger.PrintToFile("Profile Created: " + receivedPacket.dataField); // Logs
-
+                // Uses createProfile class to create new profile 
+                createProfile profile(server.RDS->pktClass.profile);
+                profile.saveInfoToFile("profiles.csv");
+                server.RDS->logFile("--Profile Created--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
                 break;
             }
             case PacketTypes::EditProfilePacket:

@@ -14,10 +14,19 @@ enum class PacketTypes {
     InvalidPacket
 };
 
+enum class ResponseCodes {
+    OK, // 200
+    ACCEPTED, // 202
+    NOCONTENT, // 204
+    UNAUTHORIZED, // 401
+    NOTFOUND // 404
+};
+
 struct Header
 {
     PacketTypes packetType;
-    int Length;
+    int profileLength;
+    int acctLength;
     int NumOfBytes;
 };
 
@@ -39,30 +48,35 @@ struct Profile
         oss << userName << ',' << firstName << ',' << lastName << ',' << bio << ',' << userClass << ',' << id << ',' << voteCount;
         return oss.str();
     }
+    int size()
+    {
+        return userName.length() + firstName.length() + lastName.length()
+            + bio.length() + userClass.length() + (sizeof(int) * 2);
+    }
 };
 
-class Packet 
+struct Packet
 {
-public:
     Header Head;
-    string dataField;
-    Profile profile;
     unsigned int CRC;
-    static const unsigned int CONSTCRC = 0xFF00FF00;
+    const unsigned int CONSTCRC = 0xFF00FF00;
+};
 
-    Packet() : CRC(0) {}
+struct Account
+{
+    string username;
+    string password;
 
-    // directly manipulating Packet members to support struct-like usage
-    void setHeader(const Header& header) { Head = header; }
-    Header getHeader() const { return Head; }
+    Account(): username(""), password("") {}
 
-    void setDataField(const string& data) { dataField = data; }
-    string getDataField() const { return dataField; }
+    operator string() const {
+        std::ostringstream oss;
+        oss << username << ',' << password;
+        return oss.str();
+    }
 
-    void setProfile(const Profile& p) { profile = p; }
-    Profile getProfile() const { return profile; }
-
-    void setCRC(unsigned int crc) { CRC = crc; }
-    unsigned int getCRC() const { return CRC; }
-
+    int size()
+    {
+        return username.length() + password.length();
+    }
 };

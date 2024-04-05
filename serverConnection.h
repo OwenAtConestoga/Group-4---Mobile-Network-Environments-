@@ -13,19 +13,19 @@ class ServerConnection {
 	int CRC;
 	char* TxBuffer;
 	char* RxBuffer;
-	SendDataServer* SDS;
-	ReadDataServer* RDS;
 	Packet pkt;
 	SOCKET ServerSocket;
 	SOCKET ConnectionSocket;
 
 public:
+	SendDataServer* SDS;
+	ReadDataServer* RDS;
 	ServerConnection();
 	int socketCreateBind();
 	void socketCleanUp(SOCKET);
 	int socketListenConnect();
 	int recvMsg();
-	void sendMsg();
+	void sendMsg(packetClass);
 	int setServerSocket(SOCKET);
 	int setConnectionSocket();
 	void changeTxBuffer(char* newTx);

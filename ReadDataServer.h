@@ -2,19 +2,20 @@
 #include <stdlib.h>
 #include "Password.h"
 #include "LogOutServer.h"
-#include "structDefinitions.h"
+#include "packet.h"
 
 class ReadDataServer {
     int& TotalSize;
-    Packet pkt;
-    Password* pass;
-    LogOutServer LOS;
+    Password* currentAccount;
 public:
+    packetClass pktClass;
+    LogOutServer LOS;
     string RxBuffer;
-    ReadDataServer(int&, Packet);
+
     void DeserializeData(char* buffer);
-    void logFile(int);
-    int serverFeedBack(bool sucessful);
+    void logFile(string, int);
+    int serverFeedBack(ResponseCodes);
     bool canAccessData();
-    void login(char* loginData);
+    bool login(Account);
+    void LogOut();
 };

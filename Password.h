@@ -10,22 +10,20 @@ using namespace std;
 
 class Password
 {
-	string username;
-	string password;
+	Account acct;
 
 public:
-	Password(char* data)
+	Password(Account newAccountDetails)
 	{
-		istringstream ss(data);
-		getline(ss, username, ',');
-		getline(ss, password, ',');
+		acct.username = newAccountDetails.username;
+		acct.password = newAccountDetails.password;
 	}
-	string getUsername() { return username; }
-	string getPassword() { return password; }
+	string getUsername() { return acct.username; }
+	string getPassword() { return acct.password; }
 	bool checkPassword()
 	{
 		string user, pass;
-		if (password.empty() || username.empty())
+		if (acct.password.empty() || acct.username.empty())
 		{
 			return false;
 		}
@@ -38,7 +36,7 @@ public:
 			istringstream ss(lineAsString);
 			getline(ss, user, ',');
 			getline(ss, pass, ',');
-			if (username == user && password == pass){
+			if (acct.username == user && acct.password == pass){
 				return true;
 			}
 		}

@@ -10,13 +10,10 @@
 class createProfile
 {
     Profile profile;
-    int& TotalSize;
-    static int defaultTotalSize;
 public:
 
     // Set up basic initialize the profile with provided data
-    createProfile(char* data, int& totalsize)
-        : TotalSize(totalsize)
+    createProfile(char* data)
     {
         istringstream dataStream(data);
         getline(dataStream, profile.userName, ',');
@@ -31,8 +28,11 @@ public:
         profile.voteCount = stoi(voteCountStr);
     }
 
-    createProfile(int profileID, int& totalsize)
-        : TotalSize(totalsize)
+    createProfile(Profile newProfile) 
+    {
+        memcpy(&profile, &newProfile, newProfile.size());  
+    }
+    createProfile(int profileID)
     {
         string dataAsString = checkIDInFile("profile.csv", profileID);
         if (dataAsString.empty())
@@ -54,8 +54,7 @@ public:
         profile.voteCount = stoi(voteCountStr);
     }
 
-    createProfile() :
-        TotalSize(defaultTotalSize)
+    createProfile()
     {
         profile.userName = "";
         profile.firstName = "";
@@ -110,6 +109,4 @@ public:
             file.close(); // Close the file
         }
     }
-    static int getDefaultTotalSize() { return defaultTotalSize; }
-
 }; 

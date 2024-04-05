@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoteBoard", "VoteBoard.vcxp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "..\client\client.vcxproj", "{B430A493-031B-4A50-B889-D005A02011AB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummyClient", "..\dummyClient\dummyClient.vcxproj", "{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{B430A493-031B-4A50-B889-D005A02011AB}.Release|x64.Build.0 = Release|x64
 		{B430A493-031B-4A50-B889-D005A02011AB}.Release|x86.ActiveCfg = Release|Win32
 		{B430A493-031B-4A50-B889-D005A02011AB}.Release|x86.Build.0 = Release|Win32
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Debug|x64.ActiveCfg = Debug|x64
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Debug|x64.Build.0 = Debug|x64
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Debug|x86.ActiveCfg = Debug|Win32
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Debug|x86.Build.0 = Debug|Win32
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Release|x64.ActiveCfg = Release|x64
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Release|x64.Build.0 = Release|x64
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Release|x86.ActiveCfg = Release|Win32
+		{EEEA8624-140A-4F7C-B6C1-53E5F21CC0F5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
