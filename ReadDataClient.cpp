@@ -1,38 +1,18 @@
-// Read Incoming Data
-// Matteo Filippone
-
-#include <string>
-#include <fstream>
+#include "readDataClient.h"
 #include <iostream>
 
-class ReadDataClient{
+ReadDataClient::ReadDataClient(ClientConnection& connection) : clientConnection(connection) {}
 
-    struct Header
-    {
-        int Length; // Length of packet
-    } Head;
+void ReadDataClient::receivePacket(Packet& packet) {
+    char buffer[MAX_PACKET_SIZE];
+    int bytesReceived = clientConnection.receiveData(buffer, MAX_PACKET_SIZE);
 
-    struct Profile
-    {
-        // Basic Account setting
-        std::string userName;
-        std::string firstName;
-        std::string lastName;
-        std::string bio;
-        std::string userClass;
-        int id;
-        int voteCount;
-
-    } profile;
-
-    char *TxBuffer;
-
-    unsigned int CRC;
-
-    const unsigned int CONSTCRC = 0xFF00FF00;
-
-public:
-
-
-
-};
+    if (bytesReceived > 0) {
+        memcpy(&packet.Head, buffer, sizeof(Header));
+        packet.dataField.assign(buffer + sizeof(Header), packet.Head.Length);
+        packet.CRC = *reinterpret_cast<unsigned int*>(buffer + sizeof(Header) + packet.Head.Length);
+    }
+    else {
+        packet.Head.packetType = PacketTypes::InvalidPacket;
+    }
+}

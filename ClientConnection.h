@@ -1,23 +1,16 @@
-#include <windows.networking.sockets.h>
-#pragma comment(lib, "Ws2_32.lib")
+#pragma once
+#include <winsock2.h>
 
-#include "header.h"
-#include "Password.h"
-
-class ClientConnection{
-
+class ClientConnection {
 private:
-    SOCKET clientSocket;
+    WSADATA wsaData;
+    SOCKET serverSocket;
+    SOCKADDR_IN serverAddr;
 
 public:
-    ClientConnection(): clientSocket(INVALID_SOCKET){}
-    ~ClientConnection(){closeConnection();}
-
-
-    bool connectToServer();
-    void sendLoginRequest(const char* username, const char* password) ;
-    PacketTypes receiveLoginResponse();
-    void closeConnection();
-
-
+    ClientConnection();
+    ~ClientConnection();
+    int connectToServer(const char* serverIP, int serverPort);
+    int sendData(char* data, int dataSize);
+    int receiveData(char* buffer, int bufferSize);
 };

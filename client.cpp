@@ -1,78 +1,130 @@
-//Client.cpp
-//Matteo Filippone
-
-#include <windows.networking.sockets.h>
-#pragma comment(lib, "Ws2_32.lib")
+#include "clientConnection.h"
+#include "readDataClient.h"
+#include "sendDataClient.h"
+//#include "LogClass.h"
+//#include "Password.h"
+//#include "createProfile.h"
+//#include "editProfile.h"
+//#include "Vote.h"
+#include "structDefinitions.h"
 #include <iostream>
 #include <fstream>
-#include <string>
-#include "ClientConnection.h"
-#include "Password.h"
-#include "header.h"
+#include <sstream>
 
+using namespace std;
 
+int main() {
+    int totalSize = 0;
+    ClientConnection clientConnection;
+    ReadDataClient readDataClient(clientConnection);
+    SendDataClient sendDataClient(clientConnection);
+    //LogClass logger("log.csv", totalSize);
+    //Password password("usr.csv");
 
-
-
-int main(int argc, char* argv[])
-{
-    ClientConnection client;
-    std::string username, password;
-   
-   
-
-    //get GetUserName
-    std::cout << "'Enter Username:";
-    std::cin >> username;
-
-    std::cout << "'Enter Password:";
-    std::cin >> password;
-
-    
-
-    //send loging request
-    //Password loginCredentials(const_cast<char*>((username+"," + password).c_str()));
-
-    //std::string loginCredentials = username +"," +password;
-    //char* credentialsBuffer = new char[loginCredentials.length()+1];
-    //strcpy(credentialsBuffer, loginCredentials.c_str());
-    //packet.setData(credentialsBuffer);
-
-    //client.sendLoginRequest(loginCredentials);
-
-    PacketTypes responseType = client.receiveLoginResponse();
-
-    if(responseType == PacketTypes::LoginSuccessPacket){
-        std::cout << "Login successful" << std::endl;
-        //add code for other functions( e.g. voting, profile management)
-    }
-    else{
-        std::cout << "Loging failed"<< std::endl;
-    }
-
-    // Send login request
-    Packet packet;
-    packet.setPacketType(PacketTypes::LoginRequestPacket);
-
-    // Concatenate username and password with a delimiter (e.g., ',')
-    std::string credentials = username + "," + password;
-    char* credentialsBuffer = new char[credentials.length() + 1];
-    strcpy(credentialsBuffer, credentials.c_str());
-
-    packet.setData(credentialsBuffer);
-    client.sendLoginRequest(username.c_str(), password.c_str());
-
-    delete[] credentialsBuffer;
-    
-    //connect to the server
-    if(!client.connectToServer()){
-        std::cerr<<"failed to connect to the server" << std::endl;
+    // Connect to the server
+    if (clientConnection.connectToServer("127.0.0.1", 27000) != 0) {
+        cout << "Failed to connect to the server." << endl;
         return 1;
     }
-    
-    //close the connection
-    client.closeConnection();
+
+    // Login
+    Packet loginPacket;
+    loginPacket.Head.packetType = PacketTypes::LoginRequestPacket;
+    cout << "Enter username: ";
+    string username;
+    cin >> username;
+    cout << "Enter password: ";
+    string password;
+    cin >> password;
+    loginPacket.dataField = username + ":" + password;
+    sendDataClient.sendPacket(loginPacket);
+    readDataClient.receivePacket(loginPacket);
+
+    if (loginPacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Login successful." << endl;
+        //logger.PrintToFile("Login Successful: " + loginPacket.dataField);
+    }
+    else {
+        cout << "Login failed." << endl;
+        //logger.PrintToFile("Login Failed: " + loginPacket.dataField);
+        return 1;
+    }
+
+    // Create profile
+    Packet createProfilePacket;
+    createProfilePacket.Head.packetType = PacketTypes::CreateProfilePacket;
+    cout << "Enter profile information:" << endl;
+    cout << "First name: ";
+    string firstName;
+    cin >> firstName;
+    cout << "Last name: ";
+    string lastName;
+    cin >> lastName;
+    cout << "Bio: ";
+    string bio;
+    cin >> bio;
+    cout << "User class: ";
+    string userClass;
+    cin >> userClass;
+    createProfilePacket.dataField = firstName + "," + lastName + "," + bio + "," + userClass;
+    sendDataClient.sendPacket(createProfilePacket);
+    readDataClient.receivePacket(createProfilePacket);
+
+    if (createProfilePacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Profile created successfully." << endl;
+        //logger.PrintToFile("Profile Created: " + createProfilePacket.dataField);
+    }
+    else {
+        cout << "Profile creation failed." << endl;
+        //logger.PrintToFile("Profile Creation Failed: " + createProfilePacket.dataField);
+    }
+
+    // Edit profile
+    Packet editProfilePacket;
+    editProfilePacket.Head.packetType = PacketTypes::EditProfilePacket;
+    cout << "Enter profile ID to edit: ";
+    int profileID;
+    cin >> profileID;
+    cout << "Enter new profile information:" << endl;
+    cout << "First name: ";
+    cin >> firstName;
+    cout << "Last name: ";
+    cin >> lastName;
+    cout << "Bio: ";
+    cin >> bio;
+    cout << "User class: ";
+    cin >> userClass;
+    editProfilePacket.dataField = to_string(profileID) + ":" + firstName + "," + lastName + "," + bio + "," + userClass;
+    sendDataClient.sendPacket(editProfilePacket);
+    readDataClient.receivePacket(editProfilePacket);
+
+    if (editProfilePacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Profile edited successfully." << endl;
+        //logger.PrintToFile("Profile Edited: " + editProfilePacket.dataField);
+    }
+    else {
+        cout << "Profile edit failed." << endl;
+        //logger.PrintToFile("Profile Edit Failed: " + editProfilePacket.dataField);
+    }
+
+    // Vote
+    Packet votePacket;
+    votePacket.Head.packetType = PacketTypes::VotePacket;
+    cout << "Enter profile ID to vote: ";
+    cin >> profileID;
+    votePacket.dataField = to_string(profileID);
+    sendDataClient.sendPacket(votePacket);
+    readDataClient.receivePacket(votePacket);
+
+    if (votePacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Vote recorded successfully." << endl;
+        //logger.PrintToFile("Vote Recorded: " + votePacket.dataField);
+    }
+    else {
+        cout << "Vote failed." << endl;
+        //logger.PrintToFile("Vote Failed: " + votePacket.dataField);
+    }
 
     return 0;
-
 }
+
