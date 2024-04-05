@@ -41,11 +41,28 @@ struct Profile
     }
 };
 
-struct Packet
+class Packet 
 {
+public:
     Header Head;
     string dataField;
-    Profile profile; // Added the Profile structure into the Packet
+    Profile profile;
     unsigned int CRC;
-    const unsigned int CONSTCRC = 0xFF00FF00;
+    static const unsigned int CONSTCRC = 0xFF00FF00;
+
+    Packet() : CRC(0) {}
+
+    // directly manipulating Packet members to support struct-like usage
+    void setHeader(const Header& header) { Head = header; }
+    Header getHeader() const { return Head; }
+
+    void setDataField(const string& data) { dataField = data; }
+    string getDataField() const { return dataField; }
+
+    void setProfile(const Profile& p) { profile = p; }
+    Profile getProfile() const { return profile; }
+
+    void setCRC(unsigned int crc) { CRC = crc; }
+    unsigned int getCRC() const { return CRC; }
+
 };
