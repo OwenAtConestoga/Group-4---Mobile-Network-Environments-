@@ -4,17 +4,19 @@
 class packetClass
 {
 public:
-	Packet pkt;
+	Header Head;
 	Profile profile;
 	Account loginInfo;
-
+	unsigned int CRC;
+	const unsigned int CONSTCRC = 0xFF00FF00;
 	packetClass()
 	{
-		pkt.Head.NumOfBytes = 0;
-		pkt.Head.acctLength = 0;
-		pkt.Head.packetType = PacketTypes::InvalidPacket;
-		pkt.Head.profileLength = 0;
+		Head.NumOfBytes = 0;
+		Head.acctLength = 0;
+		Head.packetType = PacketTypes::InvalidPacket;
+		Head.profileLength = 0;
 		profile;
 		loginInfo;
+		CRC = 0;
 	}
 };
