@@ -1,38 +1,23 @@
-// Read Incoming Data
-// Matteo Filippone
-
-#include <string>
-#include <fstream>
+#include "readDataClient.h"
 #include <iostream>
 
-class ReadDataClient{
+ReadDataClient::ReadDataClient(ClientConnection& connection) : clientConnection(connection) {}
 
-    struct Header
-    {
-        int Length; // Length of packet
-    } Head;
+void ReadDataClient::receivePacket(packetClass& packet) {
+    char buffer[MAX_PACKET_SIZE];
+    int bytesReceived = clientConnection.receiveData(buffer, MAX_PACKET_SIZE);
 
-    struct Profile
-    {
-        // Basic Account setting
-        std::string userName;
-        std::string firstName;
-        std::string lastName;
-        std::string bio;
-        std::string userClass;
-        int id;
-        int voteCount;
-
-    } profile;
-
-    char *TxBuffer;
-
-    unsigned int CRC;
-
-    const unsigned int CONSTCRC = 0xFF00FF00;
-
-public:
-
-
-
-};
+    if (bytesReceived > 0) {
+        memcpy(&packet.Head, buffer, sizeof(Header));
+        if (packet.Head.profileLength > 0) {
+            packet.profile = Profile(std::string(buffer + sizeof(Header), packet.Head.profileLength));
+        }
+        if (packet.Head.acctLength > 0) {
+            packet.loginInfo = Account(std::string(buffer + sizeof(Header) + packet.Head.profileLength, packet.Head.acctLength));
+        }
+        packet.CRC = *reinterpret_cast<unsigned int*>(buffer + sizeof(Header) + packet.Head.profileLength + packet.Head.acctLength);
+    }
+    else {
+        packet.Head.packetType = PacketTypes::InvalidPacket;
+    }
+}

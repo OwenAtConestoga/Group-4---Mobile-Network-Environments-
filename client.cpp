@@ -1,191 +1,174 @@
-//Client.cpp
-//Matteo Filippone
-#define _CRT_SECURE_NO_WARNINGS
-#include <windows.networking.sockets.h>
-#pragma comment(lib, "Ws2_32.lib")
+#include "clientConnection.h"
+#include "readDataClient.h"
+#include "sendDataClient.h"
+#include "LogClass.h"
+#include "Password.h"
+#include "packet.h"
 #include <iostream>
 #include <fstream>
-#include <string>
-#include "../Group-4---Mobile-Network-Environments-/ClientConnection.h"
-#include "../Group-4---Mobile-Network-Environments-/header.h"
+#include <sstream>
 
-void createProfile(ClientConnection &client, const std::string &username){
-    std::string firstName, lastName, bio, userClass;
-    int id;
+using namespace std;
 
-    //userName = username;
+int main() {
+    ClientConnection clientConnection;
+    ReadDataClient readDataClient(clientConnection);
+    SendDataClient sendDataClient(clientConnection);
+    LogClass logger("log.csv");
+    int totalSize = 0;
 
-    std::cout << "Enter Firstname:";
-    std::cin >> firstName;
-
-    std::cout << "Enter Lastname:";
-    std::cin >> lastName;
-
-    std::cout << "Enter bio:";
-    std::cin.ignore();
-    std::getline(std::cin, bio);
-
-    std::cout << "Enter Class:";
-    std::cin >> userClass;
-    
-    Packet packet;
-    packet.setPacketType(PacketTypes::CreateProfilePacket);
-
-    std::string profileData = username + "," + firstName + "," + lastName+ "," + bio + "," + userClass + ",";
-
-    packet.setData(const_cast<char*>(profileData.c_str()));
-
-    client.sendPacket(packet);
-
-}
-
-bool profileExisted (ClientConnection &client, const std::string &username){
-    Packet packet;
-    packet.setPacketType(PacketTypes::ProfileRequestPacket);
-
-    packet.setData(const_cast<char*>(username.c_str()));
-
-    client.sendPacket(packet);
-
-    Packet response;
-    client.receivePacket(response);
-
-    return response.getPacketType() == PacketTypes::ProfileRequestPacket;
-    
-}
-
-void editProfile(ClientConnection &client, const std::string &username){
-    if(profileExisted(client, username)){
-    
-        std::string firstName, lastName, bio, userClass;
-        int id;
-        
-        std::cout << "Enter New Firstname:";
-        std::cin >> firstName;
-
-        std::cout << "Enter New Lastname:";
-        std::cin >> lastName;
-
-        std::cout << "Enter New bio:";
-        std::cin.ignore();
-        std::getline(std::cin, bio);
-
-        std::cout << "Enter New Class:";
-        std::cin >> userClass;
-        
-        Packet packet;
-        packet.setPacketType(PacketTypes::EditProfilePacket);
-
-        std::string profileData = username + "," + firstName + "," + lastName+ "," + bio + "," + userClass + ",";
-
-        packet.setData(const_cast<char*>(profileData.c_str()));
-
-        client.sendPacket(packet);
-    }
-    else{
-        std::cout<<"Profile doesn't exist"<< std::endl;
-    }
-}
-
-void vote(ClientConnection &client){
-    int id = rand()%100;
-    std::string str = std::to_string(id);
-
-    Packet packet;
-    packet.setPacketType(PacketTypes::VotePacket);
-
-    packet.setData(const_cast<char*>((str.c_str())));
-    client.sendPacket(packet);
-
-}
-
-int main(int argc, char* argv[])
-{
-    ClientConnection client;
-    std::string username, password;
-   
-   
-
-    //get GetUserName
-    std::cout << "Enter Username:";
-    std::cin >> username;
-
-    std::cout << "Enter Password:";
-    std::cin >> password;
-
-    //connect to the server
-    if(!client.connectToServer()){
-        std::cerr<<"failed to connect to the server" << std::endl;
+    // Connect to the server
+    if (clientConnection.connectToServer("127.0.0.1", 27000) != 0) {
+        cout << "Failed to connect to the server." << endl;
         return 1;
     }
 
-    //send loging request
-    //Password loginCredentials(const_cast<char*>((username+"," + password).c_str()));
+    // Login
+    packetClass loginPacket;
+    loginPacket.Head.packetType = PacketTypes::LoginRequestPacket;
+    cout << "Enter username: ";
+    string username;
+    cin >> username;
+    cout << "Enter password: ";
+    string password;
+    cin >> password;
+    loginPacket.loginInfo = Account(username + "," + password);
+    sendDataClient.sendPacket(loginPacket);
+    readDataClient.receivePacket(loginPacket);
 
-    //std::string loginCredentials = username +"," +password;
-    //char* credentialsBuffer = new char[loginCredentials.length()+1];
-    //strcpy(credentialsBuffer, loginCredentials.c_str());
-    //packet.setData(credentialsBuffer);
-
-    //client.sendLoginRequest(loginCredentials);
-
-    PacketTypes responseType = client.receiveLoginResponse();
-
-    // Send login request
-    Packet packet;
-    packet.setPacketType(PacketTypes::LoginRequestPacket);
-
-    // Concatenate username and password with a delimiter (e.g., ',')
-    std::string credentials = username + "," + password;
-    char* credentialsBuffer = new char[credentials.length() + 1];
-    strcpy(credentialsBuffer, credentials.c_str());
-
-    packet.setData(credentialsBuffer);
-    client.sendLoginRequest(username.c_str(), password.c_str());
-
-    delete[] credentialsBuffer;
-
-    if(responseType == PacketTypes::LoginSuccessPacket){
-        std::cout << "Login successful" << std::endl;
-        //add code for other functions( e.g. voting, profile management)
-        int choice;
-
-        do{
-             std::cout << "1.Create Profile 2.Edit Profile 3.Vote 4. Edit";
-             std::cin >> choice;
-             switch (choice)
-             {
-             case 1:
-                createProfile(client,username);
-                break;
-
-            case 2:
-                editProfile(client,username);
-                break;
-
-            case 3:
-                vote(client);
-                break;
-             
-            case 4:
-                break;
-
-            default:
-                std::cout<< "Invaild choice" << std::endl;
-             }
-
-        }while(choice != 4);
-        
-
+    if (loginPacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Login successful." << endl;
+        logger.PrintToFile("Login Successful: " + loginPacket.loginInfo.username + "," + loginPacket.loginInfo.password);
     }
-    else{
-        std::cout << "Loging failed"<< std::endl;
+    else {
+        cout << "Login failed." << endl;
+        logger.PrintToFile("Login Failed: " + loginPacket.loginInfo.username + "," + loginPacket.loginInfo.password);
+        return 1;
     }
 
-    
-    //close the connection
-    client.closeConnection();
+    // Create profile
+    packetClass createProfilePacket;
+    createProfilePacket.Head.packetType = PacketTypes::CreateProfilePacket;
+    cout << "Enter profile information:" << endl;
+    cout << "First name: ";
+    string firstName;
+    cin >> firstName;
+    cout << "Last name: ";
+    string lastName;
+    cin >> lastName;
+    cout << "Bio: ";
+    string bio;
+    cin >> bio;
+    cout << "User class: ";
+    string userClass;
+    cin >> userClass;
+    createProfilePacket.profile = Profile(firstName + "," + lastName + "," + bio + "," + userClass + ",0,0");
+    sendDataClient.sendPacket(createProfilePacket);
+    readDataClient.receivePacket(createProfilePacket);
+
+    if (createProfilePacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Profile created successfully." << endl;
+        ostringstream profileStream;
+        profileStream << createProfilePacket.profile.userName << ","
+            << createProfilePacket.profile.firstName << ","
+            << createProfilePacket.profile.lastName << ","
+            << createProfilePacket.profile.bio << ","
+            << createProfilePacket.profile.userClass << ","
+            << createProfilePacket.profile.id << ","
+            << createProfilePacket.profile.voteCount;
+        logger.PrintToFile("Profile Created: " + profileStream.str());
+    }
+    else {
+        cout << "Profile creation failed." << endl;
+        ostringstream profileStream;
+        profileStream << createProfilePacket.profile.userName << ","
+            << createProfilePacket.profile.firstName << ","
+            << createProfilePacket.profile.lastName << ","
+            << createProfilePacket.profile.bio << ","
+            << createProfilePacket.profile.userClass << ","
+            << createProfilePacket.profile.id << ","
+            << createProfilePacket.profile.voteCount;
+        logger.PrintToFile("Profile Created: " + profileStream.str());
+    }
+
+    // Edit profile
+    packetClass editProfilePacket;
+    editProfilePacket.Head.packetType = PacketTypes::EditProfilePacket;
+    cout << "Enter profile ID to edit: ";
+    int profileID;
+    cin >> profileID;
+    cout << "Enter new profile information:" << endl;
+    cout << "First name: ";
+    cin >> firstName;
+    cout << "Last name: ";
+    cin >> lastName;
+    cout << "Bio: ";
+    cin >> bio;
+    cout << "User class: ";
+    cin >> userClass;
+    Profile newProfile(firstName + "," + lastName + "," + bio + "," + userClass + "," + to_string(profileID) + ",0");
+    editProfilePacket.profile = newProfile;
+    sendDataClient.sendPacket(editProfilePacket);
+    readDataClient.receivePacket(editProfilePacket);
+
+    if (editProfilePacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Profile edited successfully." << endl;
+        ostringstream profileStream;
+        profileStream << createProfilePacket.profile.userName << ","
+            << createProfilePacket.profile.firstName << ","
+            << createProfilePacket.profile.lastName << ","
+            << createProfilePacket.profile.bio << ","
+            << createProfilePacket.profile.userClass << ","
+            << createProfilePacket.profile.id << ","
+            << createProfilePacket.profile.voteCount;
+        logger.PrintToFile("Profile Created: " + profileStream.str());
+    }
+    else {
+        cout << "Profile edit failed." << endl;
+        ostringstream profileStream;
+        profileStream << createProfilePacket.profile.userName << ","
+            << createProfilePacket.profile.firstName << ","
+            << createProfilePacket.profile.lastName << ","
+            << createProfilePacket.profile.bio << ","
+            << createProfilePacket.profile.userClass << ","
+            << createProfilePacket.profile.id << ","
+            << createProfilePacket.profile.voteCount;
+        logger.PrintToFile("Profile Edited: " + profileStream.str());
+    }
+
+    // Vote
+    packetClass votePacket;
+    votePacket.Head.packetType = PacketTypes::VotePacket;
+    cout << "Enter profile ID to vote: ";
+    cin >> profileID;
+    votePacket.profile = Profile(to_string(profileID) + ",1");
+    sendDataClient.sendPacket(votePacket);
+    readDataClient.receivePacket(votePacket);
+
+    if (votePacket.Head.packetType == PacketTypes::LoginSuccessPacket) {
+        cout << "Vote recorded successfully." << endl;
+        ostringstream profileStream;
+        profileStream << createProfilePacket.profile.userName << ","
+            << createProfilePacket.profile.firstName << ","
+            << createProfilePacket.profile.lastName << ","
+            << createProfilePacket.profile.bio << ","
+            << createProfilePacket.profile.userClass << ","
+            << createProfilePacket.profile.id << ","
+            << createProfilePacket.profile.voteCount;
+        logger.PrintToFile("Profile Created: " + profileStream.str());
+    }
+    else {
+        cout << "Vote failed." << endl;
+        ostringstream profileStream;
+        profileStream << createProfilePacket.profile.userName << ","
+            << createProfilePacket.profile.firstName << ","
+            << createProfilePacket.profile.lastName << ","
+            << createProfilePacket.profile.bio << ","
+            << createProfilePacket.profile.userClass << ","
+            << createProfilePacket.profile.id << ","
+            << createProfilePacket.profile.voteCount;
+        logger.PrintToFile("Vote Created: " + profileStream.str());
+    }
 
     return 0;
-
 }

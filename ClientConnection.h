@@ -1,25 +1,16 @@
-#include <windows.networking.sockets.h>
-#pragma comment(lib, "Ws2_32.lib")
+#pragma once
+#include <winsock2.h>
 
-#include "../Group-4---Mobile-Network-Environments-/header.h"
-
-class ClientConnection{
-
+class ClientConnection {
 private:
-    SOCKET clientSocket;
+    WSADATA wsaData;
+    SOCKET serverSocket;
+    SOCKADDR_IN serverAddr;
 
 public:
-    ClientConnection(): clientSocket(INVALID_SOCKET){}
-    ~ClientConnection(){closeConnection();}
-
-
-    bool connectToServer();
-    void sendLoginRequest(const char* username, const char* password) ;
-    PacketTypes receiveLoginResponse();
-    void closeConnection();
-
-    void sendPacket(Packet &packet);
-    void receivePacket(Packet &packet);
-
-
+    ClientConnection();
+    ~ClientConnection();
+    int connectToServer(const char* serverIP, int serverPort);
+    int sendData(char* data, int dataSize);
+    int receiveData(char* buffer, int bufferSize);
 };
