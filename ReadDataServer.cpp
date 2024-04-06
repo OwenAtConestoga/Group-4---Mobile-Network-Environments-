@@ -27,10 +27,6 @@ void ReadDataServer::DeserializeData(char buffer[128]) {
         pktClass.loginInfo = Account(acctAsString);
         offset += pktClass.Head.profileLength;
     }
-    else {
-        pktClass.loginInfo.username = "";
-        pktClass.loginInfo.password = "";
-    }
 
     // Copy CRC from buffer to pktClass.CRC
     memcpy(&pktClass.CRC, buffer + offset, sizeof(unsigned int));
@@ -50,7 +46,6 @@ void ReadDataServer::logFile(string info, int serverFeedback)
     LogClass* log = new LogClass((string)"log.csv");
     string toBeLogged = "Response: " + to_string(serverFeedback);
     log->PrintToFile(info + toBeLogged + "\n\n");
-    delete log;
 }
 
 int ReadDataServer::serverFeedBack(ResponseCodes Code)

@@ -14,12 +14,7 @@ class editProfile
     int* TotalSize;
     string fileName;
 public:
-    editProfile(Profile newProfile, string filename)
-    {
-        memcpy(&profile, &newProfile, newProfile.size());
-        fileName = filename;
-    }
-    editProfile(int profileID, int& totalsize, string filename)
+    editProfile(int profileID, string filename)
     {
         fileName = filename;
         std::string dataAsString = GetDataFromID(profileID);
@@ -34,17 +29,16 @@ public:
         profile.id = stoi(idStr);
         getline(dataStream, voteCountStr, ',');
         profile.voteCount = stoi(voteCountStr);
-        TotalSize = &totalsize;
         idExists = true;
     }
-    void updateProfile(char* username = NULL, char* firstname = NULL, char* lastname = NULL, char* bio = NULL, char* userclass = NULL, int voteCount = NULL)
+    void updateProfile(Profile updatedProfile)
     {
-        profile.userName = username ? username : profile.userName;
-        profile.firstName = firstname ? firstname : profile.firstName;
-        profile.lastName = lastname ? lastname : profile.lastName;
-        profile.bio = bio ? bio : profile.bio;
-        profile.userClass = userclass ? userclass : profile.userClass;
-        profile.voteCount = voteCount ? voteCount : profile.voteCount;
+        profile.userName = !updatedProfile.userName.empty() ? updatedProfile.userName : profile.userName;
+        profile.firstName = !updatedProfile.firstName.empty() ? updatedProfile.firstName : profile.firstName;
+        profile.lastName = !updatedProfile.lastName.empty() ? updatedProfile.lastName : profile.lastName;
+        profile.bio = !updatedProfile.bio.empty() ? updatedProfile.bio : profile.bio;
+        profile.userClass = !updatedProfile.userClass.empty() ? updatedProfile.userClass : profile.userClass;
+        profile.voteCount = updatedProfile.voteCount != 0 ? updatedProfile.voteCount : profile.voteCount;
     }
 
     void updateFile()
@@ -94,29 +88,29 @@ public:
 
         if (!file.is_open()) {
             std::cerr << "Unable to open file: " << fileName << std::endl;
-            return "";
+            return ""; // Return empty string if file cannot be opened
         }
 
         while (std::getline(file, line)) {
+            lineNumber++;
             std::istringstream lineStream(line);
-            std::string currentIDStr;
-            std::getline(lineStream, currentIDStr, ',');
+            std::string data;
+            int id;
 
-            try {
-                int currentID = std::stoi(currentIDStr);
-                if (currentID == searchID) {
-                    return line;
+            // Iterate over each delimiter in the line
+            while (std::getline(lineStream, data, ',')) {
+                try {
+                    id = std::stoi(data); // Convert data to integer
+                    if (id == searchID) {
+                        return line; // Return the entire line if ID matches
+                    }
                 }
-                lineNumber++;
-            }
-            catch (const std::invalid_argument&) {
-                continue;
-            }
-            catch (const std::out_of_range&) {
-                continue;
+                catch (const std::invalid_argument&) {
+                    continue; // Skip if data cannot be converted to integer
+                }
             }
         }
 
-        return "";
+        return ""; // Return empty string if ID not found
     }
 };

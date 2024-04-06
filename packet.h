@@ -17,4 +17,15 @@ public:
 		Head.profileLength = 0;
 		CRC = 0;
 	}
+	packetClass& operator=(const packetClass& other)
+	{
+		if (this != &other) // Check for self-assignment
+		{
+			Head = other.Head;
+			profile = other.profile;
+			loginInfo = other.loginInfo;
+			CRC = other.CRC;
+		}
+		return *this;
+	}
 };

@@ -35,7 +35,3 @@ void LogClass::ReadFile()
         std::cerr << "Could not read file: " << fileName << std::endl;
     }
 }
-
-LogClass::~LogClass() {
-    delete[] this;
-}

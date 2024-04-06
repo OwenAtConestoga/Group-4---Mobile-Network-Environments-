@@ -28,10 +28,6 @@ public:
         profile.voteCount = stoi(voteCountStr);
     }
 
-    createProfile(Profile newProfile) 
-    {
-        memcpy(&profile, &newProfile, newProfile.size());  
-    }
     createProfile(int profileID)
     {
         string dataAsString = checkIDInFile("profile.csv", profileID);
@@ -104,7 +100,7 @@ public:
                 return;
             }
 
-            file << (string)profile;
+            file << (string)profile + "\n";
 
             file.close(); // Close the file
         }

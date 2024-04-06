@@ -25,7 +25,7 @@ public:
 	void socketCleanUp(SOCKET);
 	int socketListenConnect();
 	int recvMsg();
-	void sendMsg(packetClass);
+	void sendMsg(packetClass&);
 	int setServerSocket(SOCKET);
 	int setConnectionSocket();
 	void changeTxBuffer(char* newTx);

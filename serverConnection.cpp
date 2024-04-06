@@ -48,10 +48,10 @@ int ServerConnection::recvMsg()
 	return bytes;
 }
 
-void ServerConnection::sendMsg(packetClass TxPacket)
+void ServerConnection::sendMsg(packetClass& TxPacket)
 {
 	SDS = new SendDataServer(TxPacket);
-	send(ConnectionSocket, SDS->SerializeData(), sizeof(SDS->pktClass.Head.NumOfBytes), 0);
+	send(ConnectionSocket, SDS->SerializeData(), SDS->pktClass.Head.NumOfBytes, 0);
 }
 
 int ServerConnection::setServerSocket(SOCKET newSocket)

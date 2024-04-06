@@ -12,7 +12,8 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
-int main() {
+int main() 
+{
     ServerConnection server;
     WSAData wsaData;
     packetClass* TxPacket;
@@ -32,12 +33,10 @@ int main() {
         if (bytesReceived > 0)
         {
             TxPacket = new packetClass();
-            if (server.RDS->pktClass.Head.packetType != PacketTypes::LoginRequestPacket)
+            if (!server.RDS->LOS.isLoggedIn() && server.RDS->pktClass.Head.packetType != PacketTypes::LoginRequestPacket)
             {
-                { if (!server.RDS->LOS.isLoggedIn())
-                    TxPacket->Head.packetType = PacketTypes::LoginRequestPacket;
-                    server.sendMsg(*TxPacket);
-                }
+                TxPacket->Head.packetType = PacketTypes::NoAccessPacket;
+                server.sendMsg(*TxPacket);
             }
             else {
                 switch (server.RDS->pktClass.Head.packetType)
@@ -62,17 +61,22 @@ int main() {
                 case PacketTypes::CreateProfilePacket:
                 {
                     // Uses createProfile class to create new profile 
-                    createProfile profile(server.RDS->pktClass.profile);
+                    createProfile profile((char*)static_cast<string>(server.RDS->pktClass.profile).c_str());
                     profile.saveInfoToFile("profiles.csv");
                     server.RDS->logFile("--Profile Created--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    TxPacket->Head.packetType = PacketTypes::ProfileRequestPacket;
+                    server.sendMsg(*TxPacket);
                     break;
                 }
                 case PacketTypes::EditProfilePacket:
                 {
-                    editProfile editor(server.RDS->pktClass.profile, "profile.csv");
+                    editProfile editor(server.RDS->pktClass.profile.id, "profiles.csv");
+                    editor.updateProfile(server.RDS->pktClass.profile);
                     editor.updateFile(); // Writes changes back to the file
                     TxPacket->Head.packetType = PacketTypes::LoginSuccessPacket;
                     server.RDS->logFile("--Profile Edited--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    TxPacket->Head.packetType = PacketTypes::EditProfilePacket;
+                    server.sendMsg(*TxPacket);
                     break;
                 }
                 case(PacketTypes::VotePacket):
@@ -80,13 +84,15 @@ int main() {
                     Vote vote;
                     vote.addVote(server.RDS->pktClass.profile.id);
                     server.RDS->logFile("--Vote Recorded--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    TxPacket->Head.packetType = PacketTypes::VotePacket;
+                    server.sendMsg(*TxPacket);
                     break;
                 }
                 case(PacketTypes::ProfileRequestPacket):
                 {
 
                     Vote vote;
-                    string profileData = vote.GetDataFromID("profiles.csv", server.RDS->pktClass.profile.id);         // Fetches the profile data, change path if neeed
+                    string profileData = vote.GetDataFromID(server.RDS->pktClass.profile.id, "profiles.csv");         // Fetches the profile data, change path if need
                     if (!profileData.empty())
                     {
                         TxPacket->Head.packetType = PacketTypes::ProfileRequestPacket;
@@ -110,11 +116,43 @@ int main() {
                     TxPacket->profile.voteCount = stoi(voteCountStr);
                     break;
                 }
+                case(PacketTypes::LogoutPacket):
+                {
+                    server.RDS->LogOut();
+                    server.RDS->logFile("--Logout Request--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    TxPacket->Head.packetType = PacketTypes::LogoutPacket;
+                    server.sendMsg(*TxPacket);
+                }
+                case(PacketTypes::ProfileStreamPacket):
+                {
+                    int profileCount = 1;
+                    std::ifstream file("profiles.csv");
+                    std::string line;
 
+                    if (!file.is_open()) {
+                        std::cerr << "Unable to open file: " << "profiles.csv" << std::endl;
+                        break;
+                    }
+
+                    while (std::getline(file, line)) {
+                        if (line.empty()) {
+                            break;
+                        }
+                        TxPacket->profile = *new Profile(line);
+                        server.RDS->logFile("--Requested Profile Stream: Profile #" + to_string(profileCount++) + "--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                        TxPacket->Head.packetType = PacketTypes::ProfileStreamPacket;
+                        server.sendMsg(*TxPacket);
+                    }
+                    TxPacket->profile = *new Profile();
+                    TxPacket->Head.packetType = PacketTypes::EndOfProfileStreamPacket;
+                    server.RDS->logFile("--End of Profile Transmission--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    server.sendMsg(*TxPacket);
+                    break;
+                }
                 }
             }
         }
-    } while (bytesReceived > 0);
+    } while (true);
 
     server.closeServer();       // Cleans up and closes the server socket
     return 1;

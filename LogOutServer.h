@@ -3,7 +3,7 @@
 using namespace std;
 class LogOutServer {
 	bool isConnection;
-	string userNameLoggedIn;
+	string* userNameLoggedIn;
 public:
 	void LogOut() {
 		isConnection = false;
@@ -13,7 +13,7 @@ public:
 		if (success)
 		{
 			isConnection = success;
-			userNameLoggedIn = username;
+			userNameLoggedIn = new string(username);
 		}
 	}
 	bool isLoggedIn()
@@ -22,6 +22,6 @@ public:
 	}
 	string currentUser()
 	{
-		return userNameLoggedIn;
+		return *userNameLoggedIn;
 	}
 };
