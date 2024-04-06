@@ -11,9 +11,9 @@ using namespace std;
 
 class ServerConnection {
 	int CRC;
-	char* TxBuffer;
-	char* RxBuffer;
-	Packet pkt;
+	char TxBuffer[128];
+	char RxBuffer[128];
+	packetClass pkt;
 	SOCKET ServerSocket;
 	SOCKET ConnectionSocket;
 

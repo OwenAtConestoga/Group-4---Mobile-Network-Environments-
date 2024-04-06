@@ -32,91 +32,87 @@ int main() {
         if (bytesReceived > 0)
         {
             TxPacket = new packetClass();
-            
-            switch (server.RDS->pktClass.pkt.Head.packetType)
+            if (server.RDS->pktClass.Head.packetType != PacketTypes::LoginRequestPacket)
             {
-            case PacketTypes::LoginRequestPacket:
-            {
-                if (server.RDS->login(server.RDS->pktClass.loginInfo))
-                {
-                    TxPacket->pkt.Head.packetType = PacketTypes::LoginSuccessPacket;
+                { if (!server.RDS->LOS.isLoggedIn())
+                    TxPacket->Head.packetType = PacketTypes::LoginRequestPacket;
+                    server.sendMsg(*TxPacket);
                 }
-                else
+            }
+            else {
+                switch (server.RDS->pktClass.Head.packetType)
                 {
-                    TxPacket->pkt.Head.packetType = PacketTypes::NoAccessPacket;
-                }
-             
-                server.sendMsg(*TxPacket);
-                break;
-            }
-
-            case PacketTypes::CreateProfilePacket:
-            {
-                // Uses createProfile class to create new profile 
-                createProfile profile(server.RDS->pktClass.profile);
-                profile.saveInfoToFile("profiles.csv");
-                server.RDS->logFile("--Profile Created--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
-                break;
-            }
-            case PacketTypes::EditProfilePacket:
-            {
-                // Uses editProfile class to edit profile 
-                size_t delimiterPos = receivedPacket.dataField.find(":");
-                int profileID = stoi(receivedPacket.dataField.substr(0, delimiterPos));
-                string newProfileData = receivedPacket.dataField.substr(delimiterPos + 1);
-
-                editProfile editor(profileID, totalSize, "_profile.csv");       // Constructs editProfile object for the specified profile Or you can change to profile.csv. change the path if need
-
-                char* newData = const_cast<char*>(newProfileData.c_str());
-                editor.updateProfile(strtok(newData, ","), strtok(NULL, ","), strtok(NULL, ","), strtok(NULL, ","), strtok(NULL, ",")); // Updates profile data
-
-                editor.updateFile(); // Writes changes back to the file
-                receivedPacket.Head.packetType = PacketTypes::LoginSuccessPacket;
-                receivedPacket.dataField = "Profile edited successfully";
-                logger.PrintToFile("Profile Edited: " + receivedPacket.dataField);      // Logs
-
-                break;
-            }
-            case(PacketTypes::VotePacket):
-            {
-                // Uses Vote class increment vote count for a profile
-                int profileID = stoi(receivedPacket.dataField);         // Extracts profile ID from dataField
-                Vote vote;
-                vote.addVote(profileID);
-                receivedPacket.Head.packetType = PacketTypes::LoginSuccessPacket;
-                receivedPacket.dataField = "Vote recorded successfully";
-                logger.PrintToFile("Vote Recorded: " + receivedPacket.dataField);       // Logs
-
-                break;
-            }
-            case(PacketTypes::ProfileRequestPacket):
-            {
-                // Uses Vote class to fetch a profile's data
-                int profileID = stoi(receivedPacket.dataField);         // Extracts profile ID for the request
-                Vote vote;
-                string profileData = vote.GetDataFromID("profiles.csv", profileID);         // Fetches the profile data, change path if neeed
-                if (!profileData.empty())
+                case PacketTypes::LoginRequestPacket:
                 {
-                    receivedPacket.Head.packetType = PacketTypes::ProfileRequestPacket;
-                    receivedPacket.dataField = profileData;         // Sets the fetched data as the dataField of the Packet
-                }
-                else
-                {
-                    receivedPacket.Head.packetType = PacketTypes::NoAccessPacket;
-                    receivedPacket.dataField = "Profile not found";
+                    if (server.RDS->login(server.RDS->pktClass.loginInfo))
+                    {
+                        TxPacket->Head.packetType = PacketTypes::LoginSuccessPacket;
+                        server.RDS->logFile("--Login Request--\n", server.RDS->serverFeedBack(ResponseCodes::ACCEPTED));
+                    }
+                    else
+                    {
+                        TxPacket->Head.packetType = PacketTypes::NoAccessPacket;
+                        server.RDS->logFile("--Login Request--\n", server.RDS->serverFeedBack(ResponseCodes::UNAUTHORIZED));
+                    }
+
+                    server.sendMsg(*TxPacket);
+                    break;
                 }
 
-                logger.PrintToFile("Profile Requested: ID " + to_string(profileID));        // Logs
+                case PacketTypes::CreateProfilePacket:
+                {
+                    // Uses createProfile class to create new profile 
+                    createProfile profile(server.RDS->pktClass.profile);
+                    profile.saveInfoToFile("profiles.csv");
+                    server.RDS->logFile("--Profile Created--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    break;
+                }
+                case PacketTypes::EditProfilePacket:
+                {
+                    editProfile editor(server.RDS->pktClass.profile, "profile.csv");
+                    editor.updateFile(); // Writes changes back to the file
+                    TxPacket->Head.packetType = PacketTypes::LoginSuccessPacket;
+                    server.RDS->logFile("--Profile Edited--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    break;
+                }
+                case(PacketTypes::VotePacket):
+                {
+                    Vote vote;
+                    vote.addVote(server.RDS->pktClass.profile.id);
+                    server.RDS->logFile("--Vote Recorded--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    break;
+                }
+                case(PacketTypes::ProfileRequestPacket):
+                {
 
-                break;
+                    Vote vote;
+                    string profileData = vote.GetDataFromID("profiles.csv", server.RDS->pktClass.profile.id);         // Fetches the profile data, change path if neeed
+                    if (!profileData.empty())
+                    {
+                        TxPacket->Head.packetType = PacketTypes::ProfileRequestPacket;
+                        server.RDS->logFile("--Requested Data--\n", server.RDS->serverFeedBack(ResponseCodes::OK));
+                    }
+                    else
+                    {
+                        TxPacket->Head.packetType = PacketTypes::NoAccessPacket;
+                        server.RDS->logFile("--Requested Data--\n", server.RDS->serverFeedBack(ResponseCodes::NOCONTENT));
+                    }
+                    istringstream dataStream(profileData);
+                    getline(dataStream, TxPacket->profile.userName, ',');
+                    getline(dataStream, TxPacket->profile.firstName, ',');
+                    getline(dataStream, TxPacket->profile.lastName, ',');
+                    getline(dataStream, TxPacket->profile.bio, ',');
+                    getline(dataStream, TxPacket->profile.userClass, ',');
+                    string idStr, voteCountStr;
+                    getline(dataStream, idStr, ',');
+                    TxPacket->profile.id = stoi(idStr);
+                    getline(dataStream, voteCountStr, ',');
+                    TxPacket->profile.voteCount = stoi(voteCountStr);
+                    break;
+                }
+
+                }
             }
-
-            }
-
-            // Serialize and send the Packet back to the client
-            SendDataServer sendData(totalSize, (char*)&receivedPacket);         // Prepares the response Packet
-            server.changeTxBuffer(sendData.SerializeData());        // Serializes and sets the response data
-            server.sendMsg();       // Sends the response back to the client
         }
     } while (bytesReceived > 0);
 

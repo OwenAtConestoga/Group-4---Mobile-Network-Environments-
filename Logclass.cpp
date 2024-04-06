@@ -1,6 +1,6 @@
 #include "LogClass.h"
 
-LogClass::LogClass(std::string fName, int &totalsize) : fileName(fName), TotalSize((int*)&totalsize) {}
+LogClass::LogClass(std::string fName) : fileName(fName) {}
 
 // Write text to log file and update totalSize
 void LogClass::PrintToFile(const std::string& text)
@@ -9,7 +9,6 @@ void LogClass::PrintToFile(const std::string& text)
     if (outFile.is_open())
     {
         outFile << text << std::endl;
-        TotalSize += text.size() + 1;
         outFile.close();
     }
     else

@@ -1,20 +1,44 @@
 #include "ReadDataServer.h"
 #include "Logclass.h"
 #include <stdlib.h>
-
-void ReadDataServer::DeserializeData(char* buffer) 
-{
-    if (buffer == NULL) 
-    {
+void ReadDataServer::DeserializeData(char buffer[128]) {
+    if (buffer == nullptr) {
         std::cerr << "Error: Null buffer pointer." << std::endl;
         return;
     }
 
+    // Initialize offset
+    int offset = 0;
+
     // Copy the header information from buffer to header
-    memcpy(&pktClass.pkt , buffer, sizeof(Packet));
-    memcpy(&pktClass.profile, buffer + sizeof(Packet), pktClass.pkt.Head.profileLength);
-    memcpy(&pktClass.loginInfo, buffer + sizeof(Packet) + pktClass.pkt.Head.profileLength, pktClass.pkt.Head.acctLength);
+    memcpy(&pktClass.Head, buffer + offset, sizeof(Header));
+    offset += sizeof(Header);
+
+    // Copy the profile data from buffer to profile
+    if (pktClass.Head.profileLength > 0) {
+        string profileAsString(buffer + offset, pktClass.Head.profileLength);
+        pktClass.profile = Profile(profileAsString);
+        offset += pktClass.Head.profileLength;
+    }
+
+    // Copy the account data from buffer to loginInfo
+    if (pktClass.Head.acctLength > 0) {
+        string acctAsString(buffer + offset, pktClass.Head.acctLength);
+        pktClass.loginInfo = Account(acctAsString);
+        offset += pktClass.Head.profileLength;
+    }
+    else {
+        pktClass.loginInfo.username = "";
+        pktClass.loginInfo.password = "";
+    }
+
+    // Copy CRC from buffer to pktClass.CRC
+    memcpy(&pktClass.CRC, buffer + offset, sizeof(unsigned int));
+    offset += sizeof(unsigned int);
 }
+
+
+
 
 bool ReadDataServer::canAccessData()
 {
@@ -23,7 +47,7 @@ bool ReadDataServer::canAccessData()
 
 void ReadDataServer::logFile(string info, int serverFeedback)
 {
-    LogClass* log = new LogClass((string)"log.csv", (int&)TotalSize);
+    LogClass* log = new LogClass((string)"log.csv");
     string toBeLogged = "Response: " + to_string(serverFeedback);
     log->PrintToFile(info + toBeLogged + "\n\n");
     delete log;

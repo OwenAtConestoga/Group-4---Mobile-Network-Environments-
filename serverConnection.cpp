@@ -1,12 +1,12 @@
 #include "serverConnection.h"
 #include <string>
+#define MAX_ACCOUNT_MEMORY 64
+#define MAX_PROFILE_MEMORY 128
 
 ServerConnection::ServerConnection()
 {
-	RxBuffer = (char*)calloc(1, sizeof(Packet) + pkt.Head.Length);
-	TxBuffer = (char*)calloc(1, sizeof(Packet) + pkt.Head.Length);
-	SDS = (SendDataServer*)calloc(1, sizeof(Packet) + pkt.Head.Length + sizeof(int));
-	RDS = (ReadDataServer*)calloc(1, sizeof(Packet) + pkt.Head.Length + sizeof(int) + sizeof(Password) + sizeof(LogOutServer));
+	SDS = (SendDataServer*)calloc(1, sizeof(Header) + MAX_PROFILE_MEMORY + MAX_ACCOUNT_MEMORY + sizeof(unsigned int) + sizeof(const unsigned int));
+	RDS = (ReadDataServer*)calloc(1, sizeof(Header) + MAX_PROFILE_MEMORY + MAX_ACCOUNT_MEMORY + sizeof(unsigned int) + sizeof(const unsigned int) + sizeof(Password) + sizeof(LogOutServer));
 }
 
 int ServerConnection::socketCreateBind()
@@ -51,7 +51,7 @@ int ServerConnection::recvMsg()
 void ServerConnection::sendMsg(packetClass TxPacket)
 {
 	SDS = new SendDataServer(TxPacket);
-	send(ConnectionSocket, SDS->SerializeData(), sizeof(SDS->pktClass.pkt.Head.NumOfBytes), 0);
+	send(ConnectionSocket, SDS->SerializeData(), sizeof(SDS->pktClass.Head.NumOfBytes), 0);
 }
 
 int ServerConnection::setServerSocket(SOCKET newSocket)
@@ -75,11 +75,6 @@ int ServerConnection::setConnectionSocket()
 		return 1;
 	}
 	return 0;
-}
-
-void ServerConnection::changeTxBuffer(char* newTx)
-{
-	strcpy(TxBuffer, newTx);
 }
 
 void ServerConnection::closeServer() 

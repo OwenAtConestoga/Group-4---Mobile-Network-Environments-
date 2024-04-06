@@ -14,6 +14,11 @@ class editProfile
     int* TotalSize;
     string fileName;
 public:
+    editProfile(Profile newProfile, string filename)
+    {
+        memcpy(&profile, &newProfile, newProfile.size());
+        fileName = filename;
+    }
     editProfile(int profileID, int& totalsize, string filename)
     {
         fileName = filename;

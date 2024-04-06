@@ -15,8 +15,6 @@ public:
 		Head.acctLength = 0;
 		Head.packetType = PacketTypes::InvalidPacket;
 		Head.profileLength = 0;
-		profile;
-		loginInfo;
 		CRC = 0;
 	}
 };

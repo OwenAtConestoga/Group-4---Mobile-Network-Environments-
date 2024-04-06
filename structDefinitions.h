@@ -32,34 +32,38 @@ struct Header
 
 struct Profile
 {
-    std::string userName;
-    std::string firstName;
-    std::string lastName;
-    std::string bio;
-    std::string userClass;
+    string userName;
+    string firstName;
+    string lastName;
+    string bio;
+    string userClass;
     int id;
     int voteCount;
 
     //Initialize all member variables
     Profile() : userName(""), firstName(""), lastName(""), bio(""), userClass(""), id(0), voteCount(0) {}
-
+    Profile(const std::string& formattedString) {
+        std::stringstream ss(formattedString);
+        std::getline(ss, userName, ',');
+        std::getline(ss, firstName, ',');
+        std::getline(ss, lastName, ',');
+        std::getline(ss, bio, ',');
+        std::getline(ss, userClass, ',');
+        ss >> id;
+        ss.ignore(1); // Ignore the delimiter ','
+        ss >> voteCount;
+    }
     operator string() const {
         std::ostringstream oss;
         oss << userName << ',' << firstName << ',' << lastName << ',' << bio << ',' << userClass << ',' << id << ',' << voteCount;
         return oss.str();
     }
+    
     int size()
     {
-        return userName.length() + firstName.length() + lastName.length()
-            + bio.length() + userClass.length() + (sizeof(int) * 2);
+        return static_cast<int>(userName.length() + firstName.length() + lastName.length()
+            + bio.length() + userClass.length() + (sizeof(int) * 2));
     }
-};
-
-struct Packet
-{
-    Header Head;
-    unsigned int CRC;
-    const unsigned int CONSTCRC = 0xFF00FF00;
 };
 
 struct Account
@@ -70,9 +74,15 @@ struct Account
     Account(): username(""), password("") {}
 
     operator string() const {
-        std::ostringstream oss;
+        ostringstream oss;
         oss << username << ',' << password;
         return oss.str();
+    }
+
+    Account(const std::string& formattedString) {
+        stringstream ss(formattedString);
+        getline(ss, username, ',');
+        getline(ss, password, ',');
     }
 
     int size()
