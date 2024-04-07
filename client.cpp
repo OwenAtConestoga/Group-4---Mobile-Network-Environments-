@@ -32,8 +32,15 @@ int main() {
     cout << "Enter password: ";
     string password;
     cin >> password;
-    loginPacket.loginInfo = Account(username + "," + password);
+    loginPacket.loginInfo.username = username;
+    loginPacket.loginInfo.password = password;
+    //loginPacket.loginInfo = Account(username + "," + password);
     sendDataClient.sendPacket(loginPacket);
+    
+    // for testing
+    cout << loginPacket.loginInfo.username << endl;
+    cout << loginPacket.loginInfo.password << endl;
+    
     readDataClient.receivePacket(loginPacket);
 
     if (loginPacket.Head.packetType == PacketTypes::LoginSuccessPacket) {

@@ -2,11 +2,9 @@
 
 SendDataClient::SendDataClient(ClientConnection& connection) : clientConnection(connection), TotalSize(0) {}
 
-char* SendDataClient::serializeData(const packetClass& packet) {
-    int profileSize = static_cast<int>(packet.profile.userName.length() + packet.profile.firstName.length() + packet.profile.lastName.length() +
-        packet.profile.bio.length() + packet.profile.userClass.length() + (2 * sizeof(int)));
-    int accountSize = static_cast<int>(packet.loginInfo.username.length() + packet.loginInfo.password.length());
-    TotalSize = sizeof(Header) + profileSize + accountSize + sizeof(packet.CRC);
+char* SendDataClient::serializeData(packetClass& packet) {
+    int profileSize = packet.profile.size();
+    int accountSize = packet.loginInfo.size();
     char* txBuffer = new char[TotalSize];
 
     // Header
@@ -34,11 +32,14 @@ char* SendDataClient::serializeData(const packetClass& packet) {
     return txBuffer;
 }
 
-void SendDataClient::sendPacket(const packetClass& packet) {
+void SendDataClient::sendPacket(packetClass& packet) {
+    cout << "Hello" << endl; // for testing 
     char* txBuffer = serializeData(packet);
     int sentBytes = clientConnection.sendData(txBuffer, TotalSize);
     if (sentBytes != TotalSize) {
         // Handle error or incomplete send
     }
+    
+    cout << sentBytes << endl; // for testing
     delete[] txBuffer;
 }
