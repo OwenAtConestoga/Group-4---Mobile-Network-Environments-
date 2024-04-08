@@ -1,43 +1,52 @@
 #include "sendDataClient.h"
+#define NUMOFDELIMSPROFILE 4
+#define NUMOFDELIMSACCT 1
 
 SendDataClient::SendDataClient(ClientConnection& connection) : clientConnection(connection), TotalSize(0) {}
 
-char* SendDataClient::serializeData(const packetClass& packet) {
-    int profileSize = static_cast<int>(packet.profile.userName.length() + packet.profile.firstName.length() + packet.profile.lastName.length() +
-        packet.profile.bio.length() + packet.profile.userClass.length() + (2 * sizeof(int)));
-    int accountSize = static_cast<int>(packet.loginInfo.username.length() + packet.loginInfo.password.length());
-    TotalSize = sizeof(Header) + profileSize + accountSize + sizeof(packet.CRC);
-    char* txBuffer = new char[TotalSize];
+char* SendDataClient::serializeData(packetClass& packet) {
+    int TotalSize;
+    // Find Length
+    if (packet.profile.size() > 8) {
+        packet.Head.profileLength += NUMOFDELIMSPROFILE;
+    }
+    else if (packet.profile.id == 0) {
+        packet.Head.profileLength -= 8;
+    }
 
-    // Header
-    memcpy(txBuffer, &packet.Head, sizeof(Header));
+    if (packet.loginInfo.size() > 0) {
+        packet.Head.acctLength += NUMOFDELIMSACCT;
+    }
+    packet.Head.profileLength += packet.profile.size();
+    packet.Head.acctLength += packet.loginInfo.size();
+    packet.CRC = packet.CONSTCRC;
+    TotalSize = sizeof(Header) + packet.Head.profileLength + packet.Head.acctLength + sizeof(const unsigned int) + sizeof(unsigned int);
+    packet.Head.NumOfBytes = TotalSize;
 
-    // Profile
-    int profileOffset = sizeof(Header);
-    memcpy(txBuffer + profileOffset, packet.profile.userName.c_str(), packet.profile.userName.length());
-    memcpy(txBuffer + profileOffset + packet.profile.userName.length(), packet.profile.firstName.c_str(), packet.profile.firstName.length());
-    memcpy(txBuffer + profileOffset + packet.profile.userName.length() + packet.profile.firstName.length(), packet.profile.lastName.c_str(), packet.profile.lastName.length());
-    memcpy(txBuffer + profileOffset + packet.profile.userName.length() + packet.profile.firstName.length() + packet.profile.lastName.length(), packet.profile.bio.c_str(), packet.profile.bio.length());
-    memcpy(txBuffer + profileOffset + packet.profile.userName.length() + packet.profile.firstName.length() + packet.profile.lastName.length() + packet.profile.bio.length(), packet.profile.userClass.c_str(), packet.profile.userClass.length());
-    memcpy(txBuffer + profileOffset + packet.profile.userName.length() + packet.profile.firstName.length() + packet.profile.lastName.length() + packet.profile.bio.length() + packet.profile.userClass.length(), &packet.profile.id, sizeof(int));
-    memcpy(txBuffer + profileOffset + packet.profile.userName.length() + packet.profile.firstName.length() + packet.profile.lastName.length() + packet.profile.bio.length() + packet.profile.userClass.length() + sizeof(int), &packet.profile.voteCount, sizeof(int));
+    char* TxBuffer = new char[128];
 
-    // Account
-    int accountOffset = profileOffset + profileSize;
-    memcpy(txBuffer + accountOffset, packet.loginInfo.username.c_str(), packet.loginInfo.username.length());
-    memcpy(txBuffer + accountOffset + packet.loginInfo.username.length(), packet.loginInfo.password.c_str(), packet.loginInfo.password.length());
+    if (TxBuffer) {
+        memcpy(TxBuffer, &packet.Head, sizeof(Header));
 
-    // CRC
-    int crcOffset = accountOffset + accountSize;
-    memcpy(txBuffer + crcOffset, &packet.CRC, sizeof(packet.CRC));
+        if (packet.Head.profileLength > 0) {
+            memcpy(TxBuffer + sizeof(Header), static_cast<string>(packet.profile).c_str(), packet.Head.profileLength);
+        }
 
-    return txBuffer;
+        if (packet.Head.acctLength > 0) {
+            memcpy(TxBuffer + sizeof(Header), static_cast<string>(packet.loginInfo).c_str(), packet.Head.acctLength);
+        }
+
+        memcpy(TxBuffer + sizeof(Header) + packet.Head.profileLength + packet.Head.acctLength, &packet.CRC, sizeof(unsigned int));
+        memcpy(TxBuffer + sizeof(Header) + packet.Head.profileLength + packet.Head.acctLength + sizeof(unsigned int), &packet.CONSTCRC, sizeof(unsigned int));
+    }
+
+    return TxBuffer;
 }
 
-void SendDataClient::sendPacket(const packetClass& packet) {
+void SendDataClient::sendPacket(packetClass& packet) {
     cout << "Hello" << endl;
     char* txBuffer = serializeData(packet);
-    int sentBytes = clientConnection.sendData(txBuffer, TotalSize);
+    int sentBytes = clientConnection.sendData(txBuffer, packet.Head.NumOfBytes);
     if (sentBytes != TotalSize) {
         // Handle error or incomplete send
     }

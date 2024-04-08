@@ -82,3 +82,35 @@ Response: 200
 Response: 401
 
 
+--Login Attempt--
+Response: 200
+
+
+--Login Request--
+Response: 401
+
+
+--Login Attempt--
+Response: 200
+
+
+--Login Request--
+Response: 401
+
+
+--Login Attempt--
+Response: 200
+
+
+--Login Request--
+Response: 401
+
+
+--Login Attempt--
+Response: 200
+
+
+--Login Request--
+Response: 202
+
+
