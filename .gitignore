@@ -44,8 +44,5 @@
 *.pdb
 *.ilk
 *.idb
-*.vcxproj
-*.filters
 *.user
-/SendDataServer.h
 /x64
