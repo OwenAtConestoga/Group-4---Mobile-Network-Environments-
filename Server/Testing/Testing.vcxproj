@@ -37,10 +37,6 @@
     <ClInclude Include="structDefinitions.h" />
     <ClInclude Include="vote.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="log.csv" />
-    <None Include="users.csv" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

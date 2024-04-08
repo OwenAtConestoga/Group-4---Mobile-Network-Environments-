@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "dgSpecHash": "j/znr8FWe653WZqj+0Vn9dcGE7vT6gwTzvm7/XcikSBVoaoOws0txR9APMbXNcmyLr+3MHKGy59Wf+ig4h8T6Q==",
+  "dgSpecHash": "P4JBtXvHDvANQnUjKI/hu/E+oy7UQxHtqZh4VD7ot5sZQAWw1ohzmT3VSgwaNosKT4PBLPp9108SGlNNrH4nAA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\The7Cs\\Desktop\\Group-4---Mobile-Network-Environments--finaltest\\Client\\TestProject1\\TestProject1.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\thomas\\Downloads\\Group-4---Mobile-Network-Environments-\\Client\\TestProject1\\TestProject1.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\thomas\\.nuget\\packages\\coverlet.collector\\6.0.0\\coverlet.collector.6.0.0.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\microsoft.codecoverage\\17.6.0\\microsoft.codecoverage.17.6.0.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\microsoft.net.test.sdk\\17.6.0\\microsoft.net.test.sdk.17.6.0.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\microsoft.testplatform.objectmodel\\17.6.0\\microsoft.testplatform.objectmodel.17.6.0.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\microsoft.testplatform.testhost\\17.6.0\\microsoft.testplatform.testhost.17.6.0.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\mstest.testadapter\\3.0.4\\mstest.testadapter.3.0.4.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\mstest.testframework\\3.0.4\\mstest.testframework.3.0.4.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\nuget.frameworks\\5.11.0\\nuget.frameworks.5.11.0.nupkg.sha512",
+    "C:\\Users\\thomas\\.nuget\\packages\\system.reflection.metadata\\1.6.0\\system.reflection.metadata.1.6.0.nupkg.sha512"
+  ],
   "logs": []
 }

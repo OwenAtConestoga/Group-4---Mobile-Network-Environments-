@@ -32,8 +32,9 @@ int main() {
     cout << "Enter password: ";
     string password;
     cin >> password;
-    loginPacket.loginInfo.username = username;
-    loginPacket.loginInfo.password = password;
+    //loginPacket.loginInfo.username = username;
+    //loginPacket.loginInfo.password = password;
+    loginPacket.loginInfo = Account(username + "," + password);
     sendDataClient.sendPacket(loginPacket);
     
     cout << loginPacket.loginInfo.username << endl;
@@ -54,7 +55,6 @@ int main() {
 
     // Create profile
     packetClass createProfilePacket;
-
     createProfilePacket.Head.packetType = PacketTypes::CreateProfilePacket;
     cout << "Enter profile information:" << endl;
     cout << "First name: ";
@@ -69,13 +69,7 @@ int main() {
     cout << "User class: ";
     string userClass;
     cin >> userClass;
-    createProfilePacket.profile.firstName = firstName;
-    createProfilePacket.profile.lastName = lastName;
-    createProfilePacket.profile.bio = bio;
-    createProfilePacket.profile.userClass = userClass;
-    createProfilePacket.Head.packetType = PacketTypes::CreateProfilePacket;
-    sendDataClient.sendPacket(createProfilePacket);
-    //readDataClient.receivePacket(createProfilePacket);
+    createProfilePacket.profile = Profile(firstName + "," + lastName + "," + bio + "," + userClass + ",0,0");
     sendDataClient.sendPacket(createProfilePacket);
     readDataClient.receivePacket(createProfilePacket);
 
@@ -182,6 +176,6 @@ int main() {
             << createProfilePacket.profile.voteCount;
         logger.PrintToFile("Vote Created: " + profileStream.str());
     }
-    Sleep(10000);
+
     return 0;
 }

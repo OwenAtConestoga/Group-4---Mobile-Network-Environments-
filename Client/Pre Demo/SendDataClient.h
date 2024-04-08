@@ -10,6 +10,6 @@ private:
 
 public:
     SendDataClient(ClientConnection& connection);
-    char* serializeData(packetClass& packet);
-    void sendPacket(packetClass& packet);
+    char* serializeData(const packetClass& packet);
+    void sendPacket(const packetClass& packet);
 };
