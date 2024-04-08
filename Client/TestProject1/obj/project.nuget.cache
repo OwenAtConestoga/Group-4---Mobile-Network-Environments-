@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FCrOFA9PTH78FtrfzTs2xeBMMafgAd+moehYb7Xc1BE0U2Qcz7TIcAJcdofjPHMsCkHqXQy9W1c11NH+hLnGag==",
+  "dgSpecHash": "P4JBtXvHDvANQnUjKI/hu/E+oy7UQxHtqZh4VD7ot5sZQAWw1ohzmT3VSgwaNosKT4PBLPp9108SGlNNrH4nAA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\thomas\\source\\repos\\Pre Demo\\TestProject1\\TestProject1.csproj",
+  "projectFilePath": "C:\\Users\\thomas\\Downloads\\Group-4---Mobile-Network-Environments-\\Client\\TestProject1\\TestProject1.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\thomas\\.nuget\\packages\\coverlet.collector\\6.0.0\\coverlet.collector.6.0.0.nupkg.sha512",
     "C:\\Users\\thomas\\.nuget\\packages\\microsoft.codecoverage\\17.6.0\\microsoft.codecoverage.17.6.0.nupkg.sha512",
