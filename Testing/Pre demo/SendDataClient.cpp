@@ -44,13 +44,13 @@ char* SendDataClient::serializeData(packetClass& packet) {
 }
 
 void SendDataClient::sendPacket(packetClass& packet) {
-    cout << "Hello" << endl;
+    //cout << "Hello" << endl;
     char* txBuffer = serializeData(packet);
     int sentBytes = clientConnection.sendData(txBuffer, packet.Head.NumOfBytes);
     if (sentBytes != TotalSize) {
         // Handle error or incomplete send
     }
 
-    cout << sentBytes << endl;
+    //cout << sentBytes << endl;
     delete[] txBuffer;
 }

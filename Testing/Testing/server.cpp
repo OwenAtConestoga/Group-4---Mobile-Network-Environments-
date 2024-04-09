@@ -114,6 +114,7 @@ int main()
                     TxPacket->profile.id = stoi(idStr);
                     getline(dataStream, voteCountStr, ',');
                     TxPacket->profile.voteCount = stoi(voteCountStr);
+                    server.sendMsg(*TxPacket);
                     break;
                 }
                 case(PacketTypes::LogoutPacket):
