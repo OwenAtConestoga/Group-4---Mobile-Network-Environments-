@@ -98,8 +98,8 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\louis\Group-4---Mobile-Network-Environments-\Testing\Pre demo\x64\Debug;C:\Users\louis\Group-4---Mobile-Network-Environments-\Testing\Testing\x64\Debug;$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>%USERPROFILE%\Group-4---Mobile-Network-Environments-\Testing\Pre demo\x64\Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
